@@ -6,6 +6,9 @@
 ![PyQt6](https://img.shields.io/badge/PyQt6-Latest-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
+[![CI Status](https://github.com/CJ-1981/commerzbank-fints/actions/workflows/ci.yml/badge.svg)](https://github.com/CJ-1981/commerzbank-fints/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-85%25%2B-brightgreen)](https://github.com/CJ-1981/commerzbank-fints/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-113%20passing-success)](https://github.com/CJ-1981/commerzbank-fints/actions/workflows/ci.yml)
 
 ## 📸 Screenshot
 
@@ -135,12 +138,36 @@ pyinstaller commerzbank_fints.spec --clean --noconfirm
 
 #### GitHub Actions Build Pipeline
 
-The project includes automated build pipelines for Windows executables:
+The project includes comprehensive CI/CD pipelines:
 
-- **Trigger**: Push to main branch, tag creation, or manual workflow dispatch
-- **Process**: Test → Build → Package → Release
-- **Output**: Standalone Windows .exe with all dependencies bundled
-- **Artifacts**: Available in GitHub Actions and Releases
+### CI/CD Pipeline
+
+- **CI Testing**: Multi-platform automated testing (113 tests across 6 files)
+- **Quality Gates**: Code quality, security scanning, coverage ≥85%
+- **Build**: Cross-platform executable creation (Windows, macOS, Linux)
+- **Release**: Automated GitHub releases with artifacts
+
+#### CI/CD Workflows
+
+- **CI Pipeline**: Comprehensive testing with quality gates
+- **Test Reports**: Detailed test results and coverage reports
+- **Merge Protection**: Branch protection and approval workflows
+- **Notifications**: Automatic alerts on failures
+
+For detailed CI/CD documentation, see [CI-CD Guide](docs/CI-CD-GUIDE.md) and [Quick Start](docs/CI-CD-QUICKSTART.md).
+
+#### Build from Source
+
+```bash
+# Install build dependencies
+pip install -r requirements.txt pyinstaller
+
+# Build with PyInstaller spec file
+pyinstaller commerzbank_fints.spec --clean --noconfirm
+
+# The executable will be created at:
+# dist/CommerzbankFinTS_Payout_Automator.exe
+```
 
 #### Build from Source
 

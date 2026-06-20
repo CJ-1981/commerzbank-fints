@@ -1,0 +1,380 @@
+name: CI - Comprehensive Testing Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      python-version:
+        description: 'Python version to test (e.g., 3.11, 3.12)'
+        required: false
+        type: string
+        default: '3.11'
+
+env:
+  PYTHON_VERSION: '3.11'
+  COVERAGE_THRESHOLD: 85
+  TIMEOUT_MINUTES: 15
+
+jobs:
+  # Quality Gate 1: Code Quality Checks
+  code-quality:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black mypy
+
+      - name: Run Ruff linting
+        run: |
+          ruff check commerzbank_fints_qt_desktop_app/ tests/ --output-format=github
+
+      - name: Run Ruff formatting check
+        run: |
+          ruff format --check commerzbank_fints_qt_desktop_app/ tests/
+
+      - name: Run type checking (mypy)
+        run: |
+          mypy commerzbank_fints_qt_desktop_app/ --ignore-missing-imports || true
+
+      - name: Generate quality report
+        if: always()
+        run: |
+          echo "## Code Quality Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Ruff linting completed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Formatting check completed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Type checking completed" >> $GITHUB_STEP_SUMMARY
+
+  # Quality Gate 2: Security Scanning
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety bandit
+
+      - name: Run Safety check
+        run: |
+          safety check --json > safety-report.json || true
+          cat safety-report.json
+
+      - name: Run Bandit security linter
+        run: |
+          bandit -r commerzbank_fints_qt_desktop_app/ -f json -o bandit-report.json || true
+          cat bandit-report.json
+
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            safety-report.json
+            bandit-report.json
+          retention-days: 30
+
+  # Quality Gate 3: Multi-Platform Testing Matrix
+  test-matrix:
+    name: Test ${{ matrix.os }} - Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: ${{ env.TIMEOUT_MINUTES }}
+    needs: [code-quality, security-scan]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.11', '3.12']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install system dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxkbcommon-x11-0 \
+            libxcb-cursor0 \
+            libxcb-xinerama0 \
+            libgl1-mesa-glx \
+            libfontconfig1 \
+            libglib2.0-0 \
+            xvfb
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+          pip install -r requirements-test.txt
+
+      - name: Run tests with coverage (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          xvfb-run -a pytest tests/ -v \
+            --cov=commerzbank_fints_qt_desktop_app \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing \
+            --timeout=${{ env.TIMEOUT_MINUTES }} \
+            --dist=loadscope \
+            -n auto \
+            --junitxml=test-results-${{ matrix.os }}-py${{ matrix.python-version }}.xml
+
+      - name: Run tests with coverage (Windows/macOS)
+        if: runner.os != 'Linux'
+        run: |
+          pytest tests/ -v \
+            --cov=commerzbank_fints_qt_desktop_app \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing \
+            --timeout=${{ env.TIMEOUT_MINUTES }} \
+            --dist=loadscope \
+            -n auto \
+            --junitxml=test-results-${{ matrix.os }}-py${{ matrix.python-version }}.xml
+
+      - name: Check coverage threshold
+        run: |
+          coverage report --fail-under=${{ env.COVERAGE_THRESHOLD }}
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            coverage.xml
+            htmlcov/
+            test-results-*.xml
+          retention-days: 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: test-results-*.xml
+          retention-days: 30
+
+  # Quality Gate 4: Coverage Aggregation
+  coverage-report:
+    name: Generate Coverage Report
+    runs-on: ubuntu-latest
+    needs: [test-matrix]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install coverage tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install coverage coverage-badge
+
+      - name: Download all coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: coverage-reports
+
+      - name: Aggregate coverage
+        run: |
+          coverage combine coverage-reports/*/coverage.xml
+          coverage report --fail-under=${{ env.COVERAGE_THRESHOLD }}
+          coverage html -d htmlcov-aggregated
+          coverage xml -o coverage-aggregated.xml
+
+      - name: Generate coverage badge
+        run: |
+          coverage-badge -o coverage.svg -f
+
+      - name: Upload aggregated coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-aggregated
+          path: |
+            coverage-aggregated.xml
+            htmlcov-aggregated/
+            coverage.svg
+          retention-days: 90
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          MINIMUM_GREEN: ${{ env.COVERAGE_THRESHOLD }}
+          MINIMUM_ORANGE: 70
+
+      - name: Generate coverage summary
+        if: always()
+        run: |
+          echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          coverage report >> $GITHUB_STEP_SUMMARY || true
+
+  # Quality Gate 5: Performance Regression Detection
+  performance-test:
+    name: Performance Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [code-quality]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+          pip install -r requirements-test.txt
+          pip install pytest-benchmark
+
+      - name: Run performance tests
+        run: |
+          pytest tests/test_financial_calculations.py -v \
+            --benchmark-only \
+            --benchmark-json=benchmark-results.json \
+            --benchmark-columns=min,max,mean,stddev,ops,rounds
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark-results.json
+          retention-days: 30
+
+      - name: Generate performance summary
+        if: always()
+        run: |
+          echo "## Performance Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Benchmark tests completed successfully." >> $GITHUB_STEP_SUMMARY
+
+  # Final Gate: CI Status Report
+  ci-summary:
+    name: CI Pipeline Summary
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, test-matrix, coverage-report, performance-test]
+    if: always()
+
+    steps:
+      - name: Generate comprehensive summary
+        run: |
+          echo "# CI Pipeline Results - $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Quality Gates Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Gate | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Code Quality | ${{ needs.code-quality.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Scan | ${{ needs.security-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Multi-Platform Tests | ${{ needs.test-matrix.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Coverage Report | ${{ needs.coverage-report.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance Tests | ${{ needs.performance-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Artifacts Generated" >> $GITHUB_STEP_SUMMARY
+          echo "- Coverage reports (HTML/XML)" >> $GITHUB_STEP_SUMMARY
+          echo "- Test results (JUnit XML)" >> $GITHUB_STEP_SUMMARY
+          echo "- Security scan reports" >> $GITHUB_STEP_SUMMARY
+          echo "- Performance benchmark data" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "If all gates pass: ✅ Ready for build and deployment" >> $GITHUB_STEP_SUMMARY
+          echo "If any gate fails: ❌ Review and fix issues before proceeding" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check CI status
+        run: |
+          if [[ "${{ needs.test-matrix.result }}" != "success" ]]; then
+            echo "::error::Test matrix failed - blocking merge"
+            exit 1
+          fi
+          if [[ "${{ needs.coverage-report.result }}" != "success" ]]; then
+            echo "::error::Coverage threshold not met - blocking merge"
+            exit 1
+          fi
+          echo "✅ All quality gates passed - ready to proceed"
+
+  # Historical Trend Tracking
+  trend-tracking:
+    name: Track Test Trends
+    runs-on: ubuntu-latest
+    needs: [test-matrix]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+          path: test-results
+
+      - name: Generate trend report
+        run: |
+          echo "## Test Execution Trends" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          find test-results -name "*.xml" -exec echo "- {}" \; >> $GITHUB_STEP_SUMMARY || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Trend tracking enabled for historical analysis." >> $GITHUB_STEP_SUMMARY

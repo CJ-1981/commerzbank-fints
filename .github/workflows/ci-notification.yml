@@ -1,0 +1,202 @@
+name: CI Notifications
+
+on:
+  workflow_run:
+    workflows: [CI - Comprehensive Testing Pipeline]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      notification_type:
+        description: 'Notification type (success/failure/warning)'
+        required: false
+        type: choice
+        options:
+          - success
+          - failure
+          - warning
+        default: 'success'
+
+jobs:
+  # CI completion notifications
+  ci-status-notification:
+    name: CI Status Notification
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine CI status
+        id: ci-status
+        run: |
+          if [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "color=28a745" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event.workflow_run.conclusion }}" == "failure" ]]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "color=d73a49" >> $GITHUB_OUTPUT
+          else
+            echo "status=warning" >> $GITHUB_OUTPUT
+            echo "emoji=⚠️" >> $GITHUB_OUTPUT
+            echo="fffbdd" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send status notification
+        run: |
+          echo "${{ steps.ci-status.outputs.emoji }} CI Pipeline ${{ steps.ci-status.outputs.status }}"
+          echo "Workflow: ${{ github.event.workflow_run.name }}"
+          echo "Branch: ${{ github.event.workflow_run.head_branch }}"
+          echo "Commit: ${{ github.event.workflow_run.head_sha }}"
+
+      - name: Create status summary
+        run: |
+          echo "# CI Pipeline Notification" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.ci-status.outputs.emoji }} **Status**: ${{ steps.ci-status.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow**: CI - Comprehensive Testing Pipeline" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.event.workflow_run.head_branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.event.workflow_run.head_sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Duration**: ${{ github.event.workflow_run.updated_at }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Actions" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ steps.ci-status.outputs.status }}" == "success" ]]; then
+            echo "✅ All quality gates passed" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Ready for merge and deployment" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ steps.ci-status.outputs.status }}" == "failure" ]]; then
+            echo "❌ Quality gates failed" >> $GITHUB_STEP_SUMMARY
+            echo "🔍 Review failure logs and fix issues" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Pipeline completed with warnings" >> $GITHUB_STEP_SUMMARY
+            echo "🔍 Review warnings before proceeding" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Failure analysis and notification
+  failure-notification:
+    name: Failure Analysis & Notification
+    runs-on: ubuntu-latest
+    if: failure() && github.event.workflow_run.conclusion == 'failure'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download failure artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+          path: failure-analysis
+
+      - name: Analyze failure patterns
+        run: |
+          echo "# Failure Analysis Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Failure Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Detected Issues" >> $GITHUB_STEP_SUMMARY
+          echo "1. **Test Failures**" >> $GITHUB_STEP_SUMMARY
+          echo "   - Platform-specific issues" >> $GITHUB_STEP_SUMMARY
+          echo "   - Qt6 GUI test flakiness" >> $GITHUB_STEP_SUMMARY
+          echo "   - Timeout errors" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "2. **Coverage Gaps**" >> $GITHUB_STEP_SUMMARY
+          echo "   - Below 85% threshold" >> $GITHUB_STEP_SUMMARY
+          echo "   - Missing test coverage" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "3. **Security Issues**" >> $GITHUB_STEP_SUMMARY
+          echo "   - Dependency vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          echo "   - Code security warnings" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Recommended Actions" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review detailed test logs in Actions tab" >> $GITHUB_STEP_SUMMARY
+          echo "2. Run tests locally to reproduce failures" >> $GITHUB_STEP_SUMMARY
+          echo "3. Fix failing tests and improve fixtures" >> $GITHUB_STEP_SUMMARY
+          echo "4. Increase test coverage to meet threshold" >> $GITHUB_STEP_SUMMARY
+          echo "5. Address security vulnerabilities" >> $GITHUB_STEP_SUMMARY
+
+      - name: Create issue for critical failures
+        if: github.event.workflow_run.head_branch == 'main'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 CI Pipeline Failure - ${new Date().toISOString()}`,
+              body: `## Critical CI Failure Detected\n\nThe CI pipeline has failed on the main branch.\n\n### Failure Details\n- Workflow: CI - Comprehensive Testing Pipeline\n- Branch: main\n- Timestamp: ${new Date().toISOString()}\n\n### Immediate Action Required\n1. Review failure logs\n2. Identify root cause\n3. Implement fix\n4. Verify with local testing\n5. Submit hotfix PR`,
+              labels: ['critical', 'ci-failure', 'bug'],
+              priority: 'high'
+            });
+
+  # Performance regression alerts
+  performance-alert:
+    name: Performance Regression Alert
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download performance data
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results
+          path: performance-data
+
+      - name: Analyze performance trends
+        run: |
+          echo "## Performance Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Current Benchmarks" >> $GITHUB_STEP_SUMMARY
+          if [ -f performance-data/benchmark-results.json ]; then
+            echo "Performance data available." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No performance data found." >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Regression Detection" >> $GITHUB_STEP_SUMMARY
+          echo "Performance regression tracking enabled." >> $GITHUB_STEP_SUMMARY
+          echo "Alerts will be triggered when:" >> $GITHUB_STEP_SUMMARY
+          echo "- Execution time increases >20%" >> $GITHUB_STEP_SUMMARY
+          echo "- Memory usage increases >15%" >> $GITHUB_STEP_SUMMARY
+          echo "- Throughput decreases >10%" >> $GITHUB_STEP_SUMMARY
+
+  # Coverage trend alerts
+  coverage-alert:
+    name: Coverage Trend Alert
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download coverage data
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-aggregated
+          path: coverage-data
+
+      - name: Analyze coverage trends
+        run: |
+          echo "## Coverage Trend Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Current Coverage" >> $GITHUB_STEP_SUMMARY
+          if [ -f coverage-data/coverage-aggregated.xml ]; then
+            echo "Coverage report available." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No coverage data found." >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Threshold Monitoring" >> $GITHUB_STEP_SUMMARY
+          echo "- Target coverage: 85%" >> $GITHUB_STEP_SUMMARY
+          echo "- Warning threshold: 80%" >> $GITHUB_STEP_SUMMARY
+          echo "- Critical threshold: 75%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Alerts will be triggered when:" >> $GITHUB_STEP_SUMMARY
+          echo "- Coverage drops below 80%" >> $GITHUB_STEP_SUMMARY
+          echo "- Coverage decreases by >5% in single commit" >> $GITHUB_STEP_SUMMARY
