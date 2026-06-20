@@ -108,7 +108,7 @@ jobs:
   test-matrix:
     name: Test ${{ matrix.os }} - Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: ${{ env.TIMEOUT_MINUTES }}
+    timeout-minutes: 15
     needs: [code-quality, security-scan]
 
     strategy:
