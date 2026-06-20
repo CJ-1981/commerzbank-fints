@@ -6,13 +6,11 @@ Provides mock objects, test data, and Qt6 application fixtures for comprehensive
 
 import pytest
 from decimal import Decimal
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import Qt, QThread
-from PyQt6.QtTest import QTest
 import sys
 import threading
-import time
 
 
 # @MX:NOTE: [AUTO] Fixture factory pattern for test data generation

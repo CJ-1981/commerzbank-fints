@@ -17,7 +17,6 @@ Coverage Areas:
 import pytest
 from PyQt6.QtWidgets import QTableWidgetItem, QApplication
 from PyQt6.QtCore import Qt
-from PyQt6.QtTest import QTest
 from commerzbank_fints_qt_desktop_app import CommerzbankFinTSApp
 
 
