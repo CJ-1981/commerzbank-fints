@@ -35,12 +35,25 @@ Execute secure bank transfers with granular approval workflow and real-time moni
 
 ## 🚀 Installation
 
-### Prerequisites
-- Python 3.14 or higher
+### Option 1: Standalone Windows Executable (Recommended)
+
+Download the pre-built Windows executable from the [Releases](https://github.com/CJ-1981/commerzbank-fints/releases) page:
+
+1. Navigate to the latest release
+2. Download `CommerzbankFinTS_Payout_Automator-Windows-vX.X.X.zip`
+3. Extract the ZIP file
+4. Run `CommerzbankFinTS_Payout_Automator.exe`
+
+**No Python installation required!**
+
+### Option 2: Build from Source
+
+#### Prerequisites
+- Python 3.11 or higher
 - Stable internet connection
 - Commerzbank online banking with photoTAN access
 
-### Quick Start
+#### Quick Start
 
 ```bash
 # Clone the repository
@@ -48,10 +61,22 @@ git clone https://github.com/CJ-1981/commerzbank-fints.git
 cd commerzbank-fints
 
 # Install dependencies
-pip install PyQt6 fints
+pip install -r requirements.txt
 
 # Run the application
 python commerzbank_fints_qt_desktop_app.py
+```
+
+#### Building Windows Executable
+
+```bash
+# Install build dependencies
+pip install -r requirements.txt pyinstaller
+
+# Build with PyInstaller
+pyinstaller commerzbank_fints.spec --clean --noconfirm
+
+# Find the executable in dist/CommerzbankFinTS_Payout_Automator.exe
 ```
 
 ## 📖 Usage
@@ -106,13 +131,43 @@ python commerzbank_fints_qt_desktop_app.py
 
 ## 🛠️ Development
 
+### Building Executables
+
+#### GitHub Actions Build Pipeline
+
+The project includes automated build pipelines for Windows executables:
+
+- **Trigger**: Push to main branch, tag creation, or manual workflow dispatch
+- **Process**: Test → Build → Package → Release
+- **Output**: Standalone Windows .exe with all dependencies bundled
+- **Artifacts**: Available in GitHub Actions and Releases
+
+#### Build from Source
+
+```bash
+# Install build dependencies
+pip install -r requirements.txt pyinstaller
+
+# Build with PyInstaller spec file
+pyinstaller commerzbank_fints.spec --clean --noconfirm
+
+# The executable will be created at:
+# dist/CommerzbankFinTS_Payout_Automator.exe
+```
+
 ### Project Structure
 ```
 commerzbank-fints/
 ├── commerzbank_fints_qt_desktop_app.py  # Main application
-├── .moai/                                 # Project documentation
-├── .claude/                               # Development framework
-└── README.md                             # This file
+├── commerzbank_fints.spec               # PyInstaller build configuration
+├── requirements.txt                      # Production dependencies
+├── requirements-test.txt                 # Test dependencies
+├── .github/workflows/build-windows.yml   # GitHub Actions build pipeline
+├── build-assets/                         # Build resources (icons, version info)
+├── tests/                               # Test suite
+├── .moai/                               # Project documentation
+├── .claude/                             # Development framework
+└── README.md                            # This file
 ```
 
 ### Key Technologies
@@ -142,6 +197,26 @@ This software is provided as-is for educational and personal use. The authors ar
 ## 📞 Support
 
 For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/CJ-1981/commerzbank-fints).
+
+### Testing
+
+The project includes a comprehensive test suite:
+
+```bash
+# Install test dependencies
+pip install -r requirements-test.txt
+
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=commerzbank_fints_qt_desktop_app --cov-report=html
+
+# Run specific test
+pytest tests/test_app_startup.py -v
+```
+
+See [TEST_EXECUTION_GUIDE.md](TEST_EXECUTION_GUIDE.md) for detailed testing instructions.
 
 ---
 

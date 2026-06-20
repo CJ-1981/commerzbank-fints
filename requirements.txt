@@ -1,0 +1,10 @@
+# Core dependencies for Commerzbank FinTS Payout Automator
+
+# GUI Framework
+PyQt6>=6.6.0
+
+# FinTS Banking Protocol
+fints>=3.0.0
+
+# Build dependencies
+pyinstaller>=6.0.0

@@ -1,0 +1,57 @@
+name: Build Feature Request
+description: Suggest an enhancement to the build system
+title: "[Build Enhancement] "
+labels: ["build", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement to the build system. Please provide details about your proposed enhancement.
+
+  - type: dropdown
+    id: feature_type
+    attributes:
+      label: Feature Type
+      description: What type of enhancement are you requesting?
+      options:
+        - New platform support
+        - Build optimization
+        - GitHub Actions improvement
+        - Documentation enhancement
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem_statement
+    attributes:
+      label: Problem Statement
+      description: What problem does this enhancement solve?
+      placeholder: The current build system lacks support for...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution
+      description: How should the enhancement work?
+      placeholder: Add support for ARM64 builds by...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: What alternative approaches have you considered?
+      validations:
+        required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Screenshots, links, or any other relevant information
+      validations:
+        required: false

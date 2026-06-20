@@ -1,0 +1,94 @@
+name: Build Issue Report
+description: Report a problem with building the Windows executable
+title: "[Build Issue] "
+labels: ["build", "bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a build issue. Please fill in the information below to help us diagnose the problem.
+
+  - type: input
+    id: build_method
+    attributes:
+      label: Build Method
+      description: How are you building the executable?
+      placeholder: GitHub Actions / Local PyInstaller
+      options:
+        - GitHub Actions
+        - Local PyInstaller
+        - Docker Build
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: os_version
+    attributes:
+      label: Operating System
+      description: What Windows version are you using?
+      placeholder: Windows 11 23H2 / Windows 10 22H2
+    validations:
+      required: true
+
+  - type: input
+    id: python_version
+    attributes:
+      label: Python Version
+      description: What Python version are you using?
+      placeholder: Python 3.11.9
+    validations:
+      required: true
+
+  - type: textarea
+    id: error_message
+    attributes:
+      label: Error Message
+      description: Please copy and paste the full error message
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: build_log
+    attributes:
+      label: Build Log
+      description: Please provide the relevant portion of the build log
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Steps to Reproduce
+      description: What steps did you take to encounter this issue?
+      placeholder: |
+        1. Cloned the repository
+        2. Installed dependencies
+        3. Ran PyInstaller
+        4. Error occurred
+    validations:
+      required: true
+
+  - type: dropdown
+    id: build_configuration
+    attributes:
+      label: Build Configuration
+      description: Did you modify the PyInstaller spec file?
+      options:
+        - Default configuration (no changes)
+        - Modified icon settings
+        - Modified version information
+        - Added custom data files
+        - Other modifications
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_info
+    attributes:
+      label: Additional Information
+      description: Any other relevant information about the build environment or configuration
+    validations:
+      required: false
