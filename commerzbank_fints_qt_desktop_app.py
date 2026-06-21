@@ -9,7 +9,6 @@ Requirements:
 """
 
 import sys
-import logging
 import threading
 from decimal import Decimal, InvalidOperation
 from PyQt6.QtWidgets import (
@@ -19,13 +18,13 @@ from PyQt6.QtWidgets import (
     QPlainTextEdit, QInputDialog, QMessageBox, QFrame, QSplitter
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
-from PyQt6.QtGui import QFont, QColor, QPalette, QIcon
+from PyQt6.QtGui import QColor
 
 # Import open-source FinTS client libraries
 try:
     from fints.client import FinTS3PinTanClient
     from fints.models import SEPATransferOrder
-    from fints.exceptions import FinTSClientPINError, FinTSClientError
+    from fints.exceptions import FinTSClientPINError
     from fints.dialog import NeedTANResponse
     FINTS_AVAILABLE = True
 except ImportError:

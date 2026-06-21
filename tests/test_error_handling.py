@@ -15,6 +15,7 @@ Coverage Areas:
 """
 
 from unittest.mock import MagicMock, patch
+from commerzbank_fints_qt_desktop_app import FinTSWorker
 
 
 class TestFinTSLibraryExceptions:
@@ -149,7 +150,6 @@ class TestInputValidation:
         # Try to execute with empty PIN
         # This should show a QMessageBox.error and not start worker
         # Since we can't easily test QMessageBox in unit tests, we verify worker is not created
-        initial_worker = main_window.worker
 
         # Clear worker to test validation
         main_window.worker = None

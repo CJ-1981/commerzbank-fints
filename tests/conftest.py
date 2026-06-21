@@ -8,7 +8,7 @@ import pytest
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 from PyQt6.QtWidgets import QApplication
-from PyQt6.QtCore import Qt
+# No Qt import needed - fixtures provide Qt functionality
 import sys
 import threading
 

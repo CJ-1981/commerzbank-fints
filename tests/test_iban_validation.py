@@ -12,9 +12,7 @@ Coverage Areas:
 - Country-specific validation (focus on German DE IBANs)
 """
 
-import pytest
-from decimal import Decimal
-from commerzbank_fints_qt_desktop_app import CommerzbankFinTSApp
+# No unused imports needed
 
 
 class TestIBANValidationValidCases:
@@ -220,7 +218,6 @@ class TestIBANValidationIntegration:
 
     def test_table_iban_color_coding(self, main_window):
         """Test that valid IBANs get white color, invalid get red color."""
-        from PyQt6.QtGui import QColor
 
         # Set up test table with valid and invalid IBANs
         main_window.table.setRowCount(2)

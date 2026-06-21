@@ -14,9 +14,7 @@ Coverage Areas:
 - Rounding behavior
 """
 
-import pytest
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-from commerzbank_fints_qt_desktop_app import CommerzbankFinTSApp
 
 
 class TestDecimalPrecision:
@@ -35,7 +33,7 @@ class TestDecimalPrecision:
             result = Decimal(input_str)
             assert result == expected, f"Decimal('{input_str}') should equal {expected}"
             # Verify precision is preserved
-            assert str(result) == str(expected), f"String representation should preserve precision"
+            assert str(result) == str(expected), "String representation should preserve precision"
 
     def test_decimal_arithmetic_preserves_precision(self, main_window):
         """Test that Decimal arithmetic maintains precision."""
@@ -309,7 +307,7 @@ class TestAmountParsing:
             normalized = amount_str.replace(",", ".")
 
             try:
-                result = Decimal(normalized)
+                Decimal(normalized)
                 # If we get here, the string was somehow valid
                 # This is unexpected for truly invalid strings
                 if amount_str in ["not_a_number", "abc123"]:

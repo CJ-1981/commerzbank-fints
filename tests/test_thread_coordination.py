@@ -14,13 +14,11 @@ Coverage Areas:
 - Thread cancellation and cleanup
 """
 
-import pytest
 import threading
 import time
 from unittest.mock import Mock, MagicMock, patch
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
-from PyQt6.QtTest import QTest
-from commerzbank_fints_qt_desktop_app import FinTSWorker, CommerzbankFinTSApp
+from PyQt6.QtCore import QThread
+from commerzbank_fints_qt_desktop_app import FinTSWorker
 
 
 class TestFinTSWorkerThreadLifecycle:
