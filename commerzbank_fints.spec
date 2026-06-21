@@ -21,34 +21,47 @@ is_windows = sys.platform == 'win32'
 is_macos = sys.platform == 'darwin'
 is_linux = sys.platform.startswith('linux')
 
-# Data files and assets
+# Data files and assets - simplified to prevent hanging
 datas = []
 binaries = []
 
-# Collect PyQt6 data files
+# Essential Qt platform plugins (Windows-specific)
+if is_windows:
+    datas += [('C:/Python311/Lib/site-packages/PyQt6/Qt6/plugins/platforms/', 'PyQt6/Qt6/plugins/platforms/')]
+    datas += [('C:/Python311/Lib/site-packages/PyQt6/Qt6/plugins/styles/', 'PyQt6/Qt6/plugins/styles/')]
+
+# Collect fints library data only (skip problematic PyQt6 collection)
 try:
-    datas += collect_data_files('PyQt6', include_pyds=False, subdir='PyQt6')
+    datas += collect_data_files('fints', include_pyds=False, subdir='fints')
 except:
     pass
 
-# Collect fints library data
-try:
-    datas += collect_data_files('fints', include_pyds=True, subdir='fints')
-except:
-    pass
-
-# Additional hidden imports
+# Additional hidden imports - comprehensive list to prevent hanging
 hiddenimports = [
     'PyQt6.QtCore',
     'PyQt6.QtGui',
     'PyQt6.QtWidgets',
+    'PyQt6.QtPrintSupport',
     'fints.client',
     'fints.models',
     'fints.dialog',
     'fints.exceptions',
     'fints.form',
     'fints.parser',
+    'fints.types',
+    'fints.utils',
     'typing_extensions',
+    'mt940',
+    'mt940.models',
+    'sepaxml',
+    'sepaxml.decorators',
+    'dateutil',
+    'dateutil.parser',
+    'requests',
+    'urllib3',
+    'charset_normalizer',
+    'certifi',
+    'idna',
 ]
 
 # Exclude modules to reduce size
@@ -98,7 +111,7 @@ if is_windows:
         debug=False,
         bootloader_ignore_signals=False,
         strip=False,
-        upx=True,
+        upx=False,  # Disabled UPX to prevent hanging
         console=False,  # Set to True for debugging
         disable_windowed_traceback=False,
         argv_emulation=False,
@@ -118,7 +131,7 @@ elif is_macos:
         debug=False,
         bootloader_ignore_signals=False,
         strip=False,
-        upx=True,
+        upx=False,  # Disabled UPX to prevent hanging
         console=False,
         disable_windowed_traceback=False,
         argv_emulation=False,
@@ -137,7 +150,7 @@ else:  # Linux
         debug=False,
         bootloader_ignore_signals=False,
         strip=False,
-        upx=True,
+        upx=False,  # Disabled UPX to prevent hanging
         console=False,
         disable_windowed_traceback=False,
         argv_emulation=False,

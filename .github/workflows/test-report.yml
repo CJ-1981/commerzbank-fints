@@ -30,6 +30,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
 
+      - name: Install system dependencies (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxkbcommon-x11-0 \
+            libxcb-cursor0 \
+            libxcb-xinerama0 \
+            libegl1 \
+            libgbm1 \
+            libgl1 \
+            libglx1 \
+            libgl1-mesa-dri \
+            xvfb
+
       - name: Install dependencies
         run: |
           pip install pytest pytest-html pytest-json-report -r requirements-test.txt
@@ -42,11 +56,11 @@ jobs:
 
       - name: Generate HTML report
         run: |
-          pytest tests/ --html=test-report.html --self-contained-html --junitxml=test-report.xml || true
+          xvfb-run -a pytest tests/ --html=test-report.html --self-contained-html --junitxml=test-report.xml || true
 
       - name: Generate JSON report
         run: |
-          pytest tests/ --json-report --json-report-file=test-report.json || true
+          xvfb-run -a pytest tests/ --json-report --json-report-file=test-report.json || true
 
       - name: Upload test reports
         if: always()
@@ -138,7 +152,7 @@ jobs:
   failure-analysis:
     name: Analyze Test Failures
     runs-on: ubuntu-latest
-    if: failure()
+    if: always() && needs.test-report.result == 'failure'
     needs: [test-report]
 
     steps:

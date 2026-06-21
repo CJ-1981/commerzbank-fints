@@ -41,7 +41,7 @@ jobs:
           else
             echo "status=warning" >> $GITHUB_OUTPUT
             echo "emoji=⚠️" >> $GITHUB_OUTPUT
-            echo="fffbdd" >> $GITHUB_OUTPUT
+            echo "color=fffbdd" >> $GITHUB_OUTPUT
           fi
 
       - name: Send status notification

@@ -49,7 +49,11 @@ jobs:
             libxkbcommon-x11-0 \
             libxcb-cursor0 \
             libxcb-xinerama0 \
-            libgl1-mesa-glx \
+            libegl1 \
+            libgbm1 \
+            libgl1 \
+            libglx1 \
+            libgl1-mesa-dri \
             libfontconfig1 \
             libglib2.0-0
 
@@ -63,9 +67,28 @@ jobs:
           pip install -r requirements-test.txt
           pytest tests/ -v --cov=commerzbank_fints_qt_desktop_app --cov-report=xml; if (-not $?) { echo "Tests skipped - focusing on build" }
 
-      - name: Build with PyInstaller
+      - name: Build with PyInstaller (standard spec)
+        id: standard_build
         run: |
-          pyinstaller commerzbank_fints.spec --clean --noconfirm
+          echo "Starting PyInstaller build..."
+          pyinstaller commerzbank_fints.spec --clean --noconfirm --log-level=DEBUG
+          if ($LASTEXITCODE -eq 0) {
+            echo "Build completed successfully!"
+            "build_success=true" | Add-Content -Path $env:GITHUB_OUTPUT
+          } else {
+            echo "Build failed with exit code $LASTEXITCODE"
+            "build_success=false" | Add-Content -Path $env:GITHUB_OUTPUT
+          }
+        timeout-minutes: 10
+        continue-on-error: true
+
+      - name: Build with fallback spec (if standard failed)
+        if: steps.standard_build.outputs.build_success != 'true'
+        run: |
+          echo "Standard build failed, trying fast spec..."
+          pyinstaller commerzbank_fints_fast.spec --clean --noconfirm
+          echo "Fallback build completed!"
+        timeout-minutes: 8
 
       - name: Verify build (Windows)
         if: matrix.os == 'windows-latest'

@@ -59,18 +59,51 @@ jobs:
 
       - name: Verify PyInstaller installation
         run: |
-          pyinstaller --version
+          echo "Python version:"
           python --version
+          echo "PyInstaller version:"
+          pyinstaller --version
+          echo "Checking PyInstaller installation:"
+          pip show pyinstaller
+          echo "Available modules:"
+          pip list | findstr /i "pyqt6 fints"
+
+      - name: Run diagnostic tests
+        run: |
+          echo "Running PyInstaller diagnostic tests..."
+          python test_pyinstaller_hanging.py
+        timeout-minutes: 15
+        continue-on-error: true
 
       - name: Create icon directory
         run: |
           mkdir build-assets
           echo "Icon directory created"
 
-      - name: Build with PyInstaller
+      - name: Build with PyInstaller (standard spec)
+        id: standard_build
         run: |
-          pyinstaller commerzbank_fints.spec --clean --noconfirm
-        shell: cmd
+          echo "Starting PyInstaller build with standard spec..."
+          pyinstaller commerzbank_fints.spec --clean --noconfirm --log-level=DEBUG
+          if ($LASTEXITCODE -eq 0) {
+            echo "PyInstaller build completed successfully!"
+            "build_success=true" | Add-Content -Path $env:GITHUB_OUTPUT
+          } else {
+            echo "Standard build failed with exit code $LASTEXITCODE"
+            "build_success=false" | Add-Content -Path $env:GITHUB_OUTPUT
+            exit 1
+          }
+        shell: pwsh
+        timeout-minutes: 10
+
+      - name: Build with fallback spec (if standard failed)
+        if: steps.standard_build.outputs.build_success != 'true'
+        run: |
+          echo "Standard build failed, trying fast spec..."
+          pyinstaller commerzbank_fints_fast.spec --clean --noconfirm
+          echo "Fallback build completed!"
+        shell: pwsh
+        timeout-minutes: 8
 
       - name: Verify build output
         run: |
