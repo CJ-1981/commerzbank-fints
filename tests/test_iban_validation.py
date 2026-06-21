@@ -88,7 +88,9 @@ class TestIBANValidationInvalidCases:
 
         for iban in invalid_char_ibans:
             result = main_window.validate_iban_mod97(iban)
-            assert result is False, f"IBAN {iban} contains invalid characters but was accepted"
+            assert result is False, (
+                f"IBAN {iban} contains invalid characters but was accepted"
+            )
 
     def test_invalid_length(self, main_window):
         """Test rejection of IBANs with incorrect length."""
@@ -201,7 +203,9 @@ class TestMOD97AlgorithmCorrectness:
         # Letters become numbers, digits remain as-is
         iban = "DE89370400440532013000"
         result = main_window.validate_iban_mod97(iban)
-        assert isinstance(result, bool), "Numeric string building should produce valid result"
+        assert isinstance(result, bool), (
+            "Numeric string building should produce valid result"
+        )
 
     def test_mod97_remainder_check(self, main_window):
         """Test that MOD-97 remainder equals 1 for valid IBANs."""
@@ -223,15 +227,24 @@ class TestIBANValidationIntegration:
         main_window.table.setRowCount(2)
 
         # Row 0: Valid IBAN
-        main_window.table.setItem(0, 0, main_window.table.item(0, 0) or main_window.table.item(0, 0))
-        main_window.table.setItem(0, 1, main_window.table.item(0, 1) or main_window.table.item(0, 1))
-        main_window.table.setItem(0, 2, main_window.table.item(0, 2) or main_window.table.item(0, 2))
-        main_window.table.setItem(0, 3, main_window.table.item(0, 3) or main_window.table.item(0, 3))
+        main_window.table.setItem(
+            0, 0, main_window.table.item(0, 0) or main_window.table.item(0, 0)
+        )
+        main_window.table.setItem(
+            0, 1, main_window.table.item(0, 1) or main_window.table.item(0, 1)
+        )
+        main_window.table.setItem(
+            0, 2, main_window.table.item(0, 2) or main_window.table.item(0, 2)
+        )
+        main_window.table.setItem(
+            0, 3, main_window.table.item(0, 3) or main_window.table.item(0, 3)
+        )
 
         # Set valid IBAN in row 0
         valid_item = main_window.table.item(0, 1)
         if not valid_item:
             from PyQt6.QtWidgets import QTableWidgetItem
+
             valid_item = QTableWidgetItem("DE89370400440532013000")
             main_window.table.setItem(0, 1, valid_item)
 
@@ -243,7 +256,9 @@ class TestIBANValidationIntegration:
         if iban_item:
             color = iban_item.foreground().color()
             # Valid IBAN should have white/light color
-            assert color.name() in ["#f1f5f9", "#ffffff"], f"Valid IBAN should be white, got {color.name()}"
+            assert color.name() in ["#f1f5f9", "#ffffff"], (
+                f"Valid IBAN should be white, got {color.name()}"
+            )
 
     def test_invalid_iban_color_coding(self, main_window):
         """Test that invalid IBANs get red color indication."""
@@ -253,7 +268,9 @@ class TestIBANValidationIntegration:
         row = main_window.table.rowCount()
         main_window.table.insertRow(row)
         main_window.table.setItem(row, 0, QTableWidgetItem("Test User"))
-        main_window.table.setItem(row, 1, QTableWidgetItem("INVALIDIBAN123"))  # Invalid format
+        main_window.table.setItem(
+            row, 1, QTableWidgetItem("INVALIDIBAN123")
+        )  # Invalid format
         main_window.table.setItem(row, 2, QTableWidgetItem("100.00"))
         main_window.table.setItem(row, 3, QTableWidgetItem("Test"))
 
@@ -265,7 +282,9 @@ class TestIBANValidationIntegration:
         if iban_item:
             color = iban_item.foreground().color()
             # Invalid IBAN should have red color
-            assert color.name() == "#f87171", f"Invalid IBAN should be red, got {color.name()}"
+            assert color.name() == "#f87171", (
+                f"Invalid IBAN should be red, got {color.name()}"
+            )
 
 
 class TestIBANValidationPerformance:
@@ -287,7 +306,9 @@ class TestIBANValidationPerformance:
         end_time = time.time()
 
         # Should validate 300 IBANs in less than 1 second
-        assert (end_time - start_time) < 1.0, "Validation should be fast for bulk operations"
+        assert (end_time - start_time) < 1.0, (
+            "Validation should be fast for bulk operations"
+        )
 
     def test_extreme_length_iban(self, main_window):
         """Test handling of extremely long IBAN strings."""
@@ -300,7 +321,9 @@ class TestIBANValidationPerformance:
         # Test beyond maximum (should still handle gracefully)
         beyond_max = "X" * 50
         result = main_window.validate_iban_mod97(beyond_max)
-        assert isinstance(result, bool), "Should handle extremely long inputs gracefully"
+        assert isinstance(result, bool), (
+            "Should handle extremely long inputs gracefully"
+        )
 
 
 # @MX:NOTE: [AUTO] Comprehensive IBAN validation testing

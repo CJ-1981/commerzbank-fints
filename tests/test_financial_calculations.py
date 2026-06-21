@@ -34,7 +34,9 @@ class TestDecimalPrecision:
             result = Decimal(input_str)
             assert result == expected, f"Decimal('{input_str}') should equal {expected}"
             # Verify precision is preserved
-            assert str(result) == str(expected), "String representation should preserve precision"
+            assert str(result) == str(expected), (
+                "String representation should preserve precision"
+            )
 
     def test_decimal_arithmetic_preserves_precision(self, main_window):
         """Test that Decimal arithmetic maintains precision."""
@@ -53,7 +55,9 @@ class TestDecimalPrecision:
         # Division (should be careful with this in financial contexts)
         result = Decimal("100.00") / Decimal("3")
         # Division can create many decimal places
-        assert result > Decimal("33.33") and result < Decimal("33.34"), "Division should be precise"
+        assert result > Decimal("33.33") and result < Decimal("33.34"), (
+            "Division should be precise"
+        )
 
     def test_sub_cent_precision_handling(self, main_window):
         """Test handling of sub-cent precision (0.001 and below)."""
@@ -79,7 +83,9 @@ class TestDecimalPrecision:
 
         for input_str, expected in large_amounts:
             result = Decimal(input_str)
-            assert result == expected, f"Large amount {input_str} should preserve precision"
+            assert result == expected, (
+                f"Large amount {input_str} should preserve precision"
+            )
 
 
 class TestBatchTotalCalculations:
@@ -100,7 +106,9 @@ class TestBatchTotalCalculations:
 
         # Check total
         total_text = main_window.lbl_batch_total.text()
-        assert "350.75" in total_text or "350,75" in total_text, f"Total should be 350.75, got {total_text}"
+        assert "350.75" in total_text or "350,75" in total_text, (
+            f"Total should be 350.75, got {total_text}"
+        )
 
     def test_batch_total_with_many_rows(self, main_window):
         """Test batch total with many rows."""
@@ -124,7 +132,9 @@ class TestBatchTotalCalculations:
         total_numeric = total_text.replace("€", "").replace(".", "").replace(",", ".")
         calculated_total = Decimal(total_numeric)
 
-        assert calculated_total == expected_total, f"Total should be {expected_total}, got {calculated_total}"
+        assert calculated_total == expected_total, (
+            f"Total should be {expected_total}, got {calculated_total}"
+        )
 
     def test_batch_total_with_zero_amounts(self, main_window):
         """Test batch total calculation with zero amounts."""
@@ -138,7 +148,9 @@ class TestBatchTotalCalculations:
         main_window.update_batch_calculations()
 
         total_text = main_window.lbl_batch_total.text()
-        assert "0.00" in total_text or "0,00" in total_text, f"Total should be 0.00, got {total_text}"
+        assert "0.00" in total_text or "0,00" in total_text, (
+            f"Total should be 0.00, got {total_text}"
+        )
 
     def test_batch_total_with_mixed_valid_invalid_amounts(self, main_window):
         """Test batch total with valid and invalid amounts mixed."""
@@ -154,7 +166,9 @@ class TestBatchTotalCalculations:
 
         # Should only sum valid amounts (100.00 + 200.50 = 300.50)
         total_text = main_window.lbl_batch_total.text()
-        assert "300.50" in total_text or "300,50" in total_text, f"Total should be 300.50, got {total_text}"
+        assert "300.50" in total_text or "300,50" in total_text, (
+            f"Total should be 300.50, got {total_text}"
+        )
 
     def test_batch_total_updates_on_row_change(self, main_window):
         """Test that batch total updates when table data changes."""
@@ -173,7 +187,9 @@ class TestBatchTotalCalculations:
 
         # Check updated total
         total_text = main_window.lbl_batch_total.text()
-        assert "250.00" in total_text or "250,00" in total_text, f"Total should update to 250.00, got {total_text}"
+        assert "250.00" in total_text or "250,00" in total_text, (
+            f"Total should update to 250.00, got {total_text}"
+        )
 
     def test_batch_count_updates_correctly(self, main_window):
         """Test that batch count updates correctly."""
@@ -202,7 +218,9 @@ class TestBatchTotalCalculations:
         main_window.update_batch_calculations()
 
         count_text = main_window.lbl_batch_count.text()
-        assert "5 Payouts" in count_text, f"Count should be '5 Payouts', got {count_text}"
+        assert "5 Payouts" in count_text, (
+            f"Count should be '5 Payouts', got {count_text}"
+        )
 
 
 class TestCurrencyFormatting:
@@ -227,7 +245,9 @@ class TestCurrencyFormatting:
             main_window.update_batch_calculations()
 
             total_text = main_window.lbl_batch_total.text()
-            assert expected_substring in total_text, f"Expected '{expected_substring}' in '{total_text}'"
+            assert expected_substring in total_text, (
+                f"Expected '{expected_substring}' in '{total_text}'"
+            )
 
     def test_amount_parsing_with_comma_decimal(self, main_window):
         """Test parsing amounts with comma as decimal separator."""
@@ -267,7 +287,9 @@ class TestCurrencyFormatting:
         main_window.update_batch_calculations()
 
         total_text = main_window.lbl_batch_total.text()
-        assert "€" in total_text or "EUR" in total_text, "Total should contain Euro symbol"
+        assert "€" in total_text or "EUR" in total_text, (
+            "Total should contain Euro symbol"
+        )
 
 
 class TestAmountParsing:
@@ -332,7 +354,9 @@ class TestAmountParsing:
 
         # Total should be 100.50 + 200.75 + 300.00 = 601.25
         total_text = main_window.lbl_batch_total.text()
-        assert "601.25" in total_text or "601,25" in total_text, f"Total should be 601.25, got {total_text}"
+        assert "601.25" in total_text or "601,25" in total_text, (
+            f"Total should be 601.25, got {total_text}"
+        )
 
 
 class TestEdgeCases:
@@ -350,7 +374,9 @@ class TestEdgeCases:
 
         # Should include zero amounts in total (0.00 + 100.00 = 100.00)
         total_text = main_window.lbl_batch_total.text()
-        assert "100.00" in total_text or "100,00" in total_text, f"Total should be 100.00, got {total_text}"
+        assert "100.00" in total_text or "100,00" in total_text, (
+            f"Total should be 100.00, got {total_text}"
+        )
 
     def test_negative_amount_handling(self, main_window):
         """Test handling of negative amounts (if supported)."""
@@ -408,7 +434,9 @@ class TestEdgeCases:
 
         # Should skip empty cells (100.00 + 200.00 = 300.00)
         total_text = main_window.lbl_batch_total.text()
-        assert "300.00" in total_text or "300,00" in total_text, f"Total should be 300.00, got {total_text}"
+        assert "300.00" in total_text or "300,00" in total_text, (
+            f"Total should be 300.00, got {total_text}"
+        )
 
     def test_whitespace_amount_cells(self, main_window):
         """Test handling of whitespace-only amount cells."""
@@ -422,7 +450,9 @@ class TestEdgeCases:
 
         # Should treat whitespace as zero
         total_text = main_window.lbl_batch_total.text()
-        assert "100.00" in total_text or "100,00" in total_text, f"Total should be 100.00, got {total_text}"
+        assert "100.00" in total_text or "100,00" in total_text, (
+            f"Total should be 100.00, got {total_text}"
+        )
 
 
 class TestRoundingBehavior:
@@ -432,7 +462,10 @@ class TestRoundingBehavior:
         """Test default Decimal rounding behavior."""
         # Decimal uses default rounding (round-half-even in Python 3)
         test_cases = [
-            (Decimal("1.005"), 2),  # May round to 1.00 or 1.01 depending on rounding mode
+            (
+                Decimal("1.005"),
+                2,
+            ),  # May round to 1.00 or 1.01 depending on rounding mode
             (Decimal("2.5"), 0),  # May round to 2 or 3
             (Decimal("3.5"), 0),  # May round to 4 (round-half-even: 3.5 -> 4)
         ]

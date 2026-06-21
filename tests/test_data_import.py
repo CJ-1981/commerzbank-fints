@@ -44,10 +44,18 @@ class TestClipboardParsing:
         amount_item = main_window.table.item(first_imported_row, 2)
         ref_item = main_window.table.item(first_imported_row, 3)
 
-        assert name_item.text() == "Name1", f"Name should be 'Name1', got '{name_item.text()}'"
-        assert "DE89370400440532013000" in iban_item.text(), f"IBAN should contain DE89..., got '{iban_item.text()}'"
-        assert "100.00" in amount_item.text() or "100,00" in amount_item.text(), f"Amount should be 100.00, got '{amount_item.text()}'"
-        assert ref_item.text() == "Reference1", f"Reference should be 'Reference1', got '{ref_item.text()}'"
+        assert name_item.text() == "Name1", (
+            f"Name should be 'Name1', got '{name_item.text()}'"
+        )
+        assert "DE89370400440532013000" in iban_item.text(), (
+            f"IBAN should contain DE89..., got '{iban_item.text()}'"
+        )
+        assert "100.00" in amount_item.text() or "100,00" in amount_item.text(), (
+            f"Amount should be 100.00, got '{amount_item.text()}'"
+        )
+        assert ref_item.text() == "Reference1", (
+            f"Reference should be 'Reference1', got '{ref_item.text()}'"
+        )
 
     def test_comma_decimal_parsing(self, main_window):
         """Test that comma decimals are converted to dot decimals."""
@@ -63,7 +71,9 @@ class TestClipboardParsing:
 
         amount_item = main_window.table.item(imported_row, 2)
         # Should convert comma to dot
-        assert "100.50" in amount_item.text() or "100,50" in amount_item.text(), f"Amount should handle comma decimal, got '{amount_item.text()}'"
+        assert "100.50" in amount_item.text() or "100,50" in amount_item.text(), (
+            f"Amount should handle comma decimal, got '{amount_item.text()}'"
+        )
 
     def test_empty_clipboard(self, main_window):
         """Test handling of empty clipboard."""
@@ -75,7 +85,9 @@ class TestClipboardParsing:
         main_window.paste_from_clipboard()
 
         # Should not add any rows
-        assert main_window.table.rowCount() == initial_row_count, "Empty clipboard should not add rows"
+        assert main_window.table.rowCount() == initial_row_count, (
+            "Empty clipboard should not add rows"
+        )
 
     def test_whitespace_only_clipboard(self, main_window):
         """Test handling of whitespace-only clipboard."""
@@ -87,7 +99,9 @@ class TestClipboardParsing:
         main_window.paste_from_clipboard()
 
         # Should not add any rows
-        assert main_window.table.rowCount() == initial_row_count, "Whitespace-only clipboard should not add rows"
+        assert main_window.table.rowCount() == initial_row_count, (
+            "Whitespace-only clipboard should not add rows"
+        )
 
     def test_missing_columns_handling(self, main_window):
         """Test handling of rows with missing columns."""
@@ -115,7 +129,9 @@ class TestClipboardParsing:
     def test_extra_columns_handling(self, main_window):
         """Test handling of rows with extra columns."""
         # Row with 5 columns (should use first 4)
-        clipboard_data = "Name1\tDE89370400440532013000\t100.00\tReference1\tExtraColumn"
+        clipboard_data = (
+            "Name1\tDE89370400440532013000\t100.00\tReference1\tExtraColumn"
+        )
 
         clipboard = QApplication.clipboard()
         clipboard.setText(clipboard_data)
@@ -127,7 +143,9 @@ class TestClipboardParsing:
 
         # Should import only first 4 columns
         name_item = main_window.table.item(imported_row, 0)
-        assert name_item.text() == "Name1", "Should import first 4 columns and ignore extras"
+        assert name_item.text() == "Name1", (
+            "Should import first 4 columns and ignore extras"
+        )
 
     def test_empty_lines_in_clipboard(self, main_window):
         """Test handling of empty lines in clipboard data."""
@@ -147,7 +165,9 @@ class TestClipboardParsing:
             if name_item and name_item.text() in ["Name1", "Name2"]:
                 imported_rows += 1
 
-        assert imported_rows == 2, f"Should import 2 non-empty rows, got {imported_rows}"
+        assert imported_rows == 2, (
+            f"Should import 2 non-empty rows, got {imported_rows}"
+        )
 
     def test_single_row_import(self, main_window):
         """Test importing a single row."""
@@ -187,7 +207,9 @@ class TestClipboardParsing:
         iban_text = iban_item.text()
         assert iban_text.isupper(), "IBAN should be uppercase"
         assert " " not in iban_text, "IBAN should not contain spaces"
-        assert "DE89370400440532013000" in iban_text, f"IBAN should be normalized, got {iban_text}"
+        assert "DE89370400440532013000" in iban_text, (
+            f"IBAN should be normalized, got {iban_text}"
+        )
 
 
 class TestTableRowOperations:
@@ -208,10 +230,14 @@ class TestTableRowOperations:
         amount_item = main_window.table.item(new_row, 2)
         ref_item = main_window.table.item(new_row, 3)
 
-        assert name_item.text() == "New Recipient", "Default name should be 'New Recipient'"
+        assert name_item.text() == "New Recipient", (
+            "Default name should be 'New Recipient'"
+        )
         assert iban_item.text() == "DE", "Default IBAN should be 'DE'"
         assert amount_item.text() == "0.00", "Default amount should be '0.00'"
-        assert ref_item.text() == "Invoice Ref", "Default reference should be 'Invoice Ref'"
+        assert ref_item.text() == "Invoice Ref", (
+            "Default reference should be 'Invoice Ref'"
+        )
 
     def test_add_multiple_rows(self, main_window):
         """Test adding multiple rows."""
@@ -235,7 +261,9 @@ class TestTableRowOperations:
         # Delete the selected row
         main_window.delete_selected_row()
 
-        assert main_window.table.rowCount() == row_count_before - 1, "Should delete 1 row"
+        assert main_window.table.rowCount() == row_count_before - 1, (
+            "Should delete 1 row"
+        )
 
     def test_delete_multiple_rows(self, main_window):
         """Test deleting multiple rows at once."""
@@ -249,13 +277,15 @@ class TestTableRowOperations:
         main_window.table.setSelectionBehavior(main_window.table.SelectRows)
         main_window.table.setRangeSelected(
             main_window.model().index(row_count_before - 3, 0),
-            main_window.model().index(row_count_before - 1, 3)
+            main_window.model().index(row_count_before - 1, 3),
         )
 
         # Delete selected rows
         main_window.delete_selected_row()
 
-        assert main_window.table.rowCount() == row_count_before - 3, "Should delete 3 rows"
+        assert main_window.table.rowCount() == row_count_before - 3, (
+            "Should delete 3 rows"
+        )
 
     def test_delete_row_without_selection(self, main_window):
         """Test deleting without selecting a row shows warning."""
@@ -270,7 +300,9 @@ class TestTableRowOperations:
         # Row count should not change
         row_count_before = main_window.table.rowCount()
         main_window.delete_selected_row()
-        assert main_window.table.rowCount() == row_count_before, "No rows should be deleted without selection"
+        assert main_window.table.rowCount() == row_count_before, (
+            "No rows should be deleted without selection"
+        )
 
     def test_modify_row_data(self, main_window):
         """Test modifying row data."""
@@ -292,7 +324,9 @@ class TestTableRowOperations:
         assert name_item.text() == "Modified Name", "Name should be modified"
 
         amount_item = main_window.table.item(row, 2)
-        assert "500.00" in amount_item.text() or "500,00" in amount_item.text(), "Amount should be modified"
+        assert "500.00" in amount_item.text() or "500,00" in amount_item.text(), (
+            "Amount should be modified"
+        )
 
     def test_clear_all_rows(self, main_window):
         """Test clearing all rows from table."""
@@ -325,11 +359,15 @@ class TestBatchCalculationUpdates:
 
         # Check batch count
         count_text = main_window.lbl_batch_count.text()
-        assert "1 Payout" in count_text, f"Count should be '1 Payout', got '{count_text}'"
+        assert "1 Payout" in count_text, (
+            f"Count should be '1 Payout', got '{count_text}'"
+        )
 
         # Check batch total
         total_text = main_window.lbl_batch_total.text()
-        assert "100.00" in total_text or "100,00" in total_text, f"Total should be 100.00, got '{total_text}'"
+        assert "100.00" in total_text or "100,00" in total_text, (
+            f"Total should be 100.00, got '{total_text}'"
+        )
 
     def test_batch_calculation_on_row_delete(self, main_window):
         """Test that batch calculations update when row is deleted."""
@@ -348,7 +386,9 @@ class TestBatchCalculationUpdates:
 
         # Total should now be 100 + 200 = 300
         total_after = main_window.lbl_batch_total.text()
-        assert "300.00" in total_after or "300,00" in total_after, f"Total should be 300.00 after delete, got '{total_after}'"
+        assert "300.00" in total_after or "300,00" in total_after, (
+            f"Total should be 300.00 after delete, got '{total_after}'"
+        )
 
     def test_batch_calculation_on_data_change(self, main_window):
         """Test that batch calculations update when cell data changes."""
@@ -362,7 +402,9 @@ class TestBatchCalculationUpdates:
 
         # Verify initial total
         total_before = main_window.lbl_batch_total.text()
-        assert "100.00" in total_before or "100,00" in total_before, "Initial total should be 100.00"
+        assert "100.00" in total_before or "100,00" in total_before, (
+            "Initial total should be 100.00"
+        )
 
         # Change amount
         main_window.table.setItem(row, 2, QTableWidgetItem("250.00"))
@@ -372,7 +414,9 @@ class TestBatchCalculationUpdates:
 
         # Verify updated total
         total_after = main_window.lbl_batch_total.text()
-        assert "250.00" in total_after or "250,00" in total_after, f"Total should be 250.00 after change, got '{total_after}'"
+        assert "250.00" in total_after or "250,00" in total_after, (
+            f"Total should be 250.00 after change, got '{total_after}'"
+        )
 
     def test_batch_calculation_with_empty_table(self, main_window):
         """Test batch calculations with empty table."""
@@ -382,11 +426,15 @@ class TestBatchCalculationUpdates:
 
         # Count should be 0
         count_text = main_window.lbl_batch_count.text()
-        assert "0 Payout" in count_text, f"Count should be '0 Payouts', got '{count_text}'"
+        assert "0 Payout" in count_text, (
+            f"Count should be '0 Payouts', got '{count_text}'"
+        )
 
         # Total should be 0.00
         total_text = main_window.lbl_batch_total.text()
-        assert "0.00" in total_text or "0,00" in total_text, f"Total should be 0.00, got '{total_text}'"
+        assert "0.00" in total_text or "0,00" in total_text, (
+            f"Total should be 0.00, got '{total_text}'"
+        )
 
 
 class TestTableEventHandling:
@@ -410,12 +458,16 @@ class TestTableEventHandling:
 
         # Verify batch calculation was triggered
         total_text = main_window.lbl_batch_total.text()
-        assert "100.00" in total_text or "100,00" in total_text, "Batch calculation should be triggered"
+        assert "100.00" in total_text or "100,00" in total_text, (
+            "Batch calculation should be triggered"
+        )
 
     def test_table_signal_connection(self, main_window):
         """Test that itemChanged signal is properly connected."""
         # Verify signal is connected (this is a basic check)
-        assert main_window.table.itemChanged is not None, "itemChanged signal should exist"
+        assert main_window.table.itemChanged is not None, (
+            "itemChanged signal should exist"
+        )
 
         # Add a row and check that changing it triggers calculation
         main_window.add_table_row()
@@ -429,7 +481,9 @@ class TestTableEventHandling:
 
         # Verify calculation was updated
         total_text = main_window.lbl_batch_total.text()
-        assert "999.99" in total_text or "999,99" in total_text, "Signal should trigger batch calculation"
+        assert "999.99" in total_text or "999,99" in total_text, (
+            "Signal should trigger batch calculation"
+        )
 
 
 class TestDataValidation:
@@ -453,7 +507,9 @@ class TestDataValidation:
             # Check for invalid IBAN color indication (red)
             color = iban_item.foreground().color()
             # Invalid IBAN should have red color (#f87171)
-            assert color.name() == "#f87171", f"Invalid IBAN should be red, got {color.name()}"
+            assert color.name() == "#f87171", (
+                f"Invalid IBAN should be red, got {color.name()}"
+            )
 
     def test_valid_iban_color_on_import(self, main_window):
         """Test that valid imported IBANs get correct color."""
@@ -472,7 +528,9 @@ class TestDataValidation:
         if iban_item:
             color = iban_item.foreground().color()
             # Valid IBAN should have white/light color (#f1f5f9)
-            assert color.name() in ["#f1f5f9", "#ffffff"], f"Valid IBAN should be white, got {color.name()}"
+            assert color.name() in ["#f1f5f9", "#ffffff"], (
+                f"Valid IBAN should be white, got {color.name()}"
+            )
 
     def test_amount_validation_on_import(self, main_window):
         """Test that invalid amounts are handled."""
@@ -486,7 +544,9 @@ class TestDataValidation:
 
         # Should not crash, and should handle gracefully
         # The amount might be stored as-is or treated as 0
-        assert main_window.table.rowCount() > 0, "Row should be imported even with invalid amount"
+        assert main_window.table.rowCount() > 0, (
+            "Row should be imported even with invalid amount"
+        )
 
 
 class TestImportPerformance:
@@ -499,7 +559,9 @@ class TestImportPerformance:
         # Generate large clipboard data (1000 rows)
         lines = []
         for i in range(1000):
-            lines.append(f"Name{i}\tDE89370400440532013000\t{(i + 1) * 10}.50\tReference{i}")
+            lines.append(
+                f"Name{i}\tDE89370400440532013000\t{(i + 1) * 10}.50\tReference{i}"
+            )
 
         clipboard_data = "\n".join(lines)
 
@@ -515,7 +577,9 @@ class TestImportPerformance:
         assert elapsed < 2.0, f"Large import should be fast, took {elapsed:.2f}s"
 
         # Verify rows were imported
-        assert main_window.table.rowCount() >= 1000, f"Should import 1000 rows, got {main_window.table.rowCount()}"
+        assert main_window.table.rowCount() >= 1000, (
+            f"Should import 1000 rows, got {main_window.table.rowCount()}"
+        )
 
     def test_frequent_add_row_performance(self, main_window):
         """Test performance of adding many rows."""
@@ -533,7 +597,9 @@ class TestImportPerformance:
         # Should complete in reasonable time (< 3 seconds)
         assert elapsed < 3.0, f"Adding 1000 rows should be fast, took {elapsed:.2f}s"
 
-        assert main_window.table.rowCount() == 1000, f"Should have 1000 rows, got {main_window.table.rowCount()}"
+        assert main_window.table.rowCount() == 1000, (
+            f"Should have 1000 rows, got {main_window.table.rowCount()}"
+        )
 
 
 # @MX:NOTE: [AUTO] Comprehensive data import testing

@@ -8,6 +8,7 @@ import pytest
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 from PyQt6.QtWidgets import QApplication
+
 # No Qt import needed - fixtures provide Qt functionality
 import sys
 import threading
@@ -70,7 +71,7 @@ def valid_iban_data():
         "checksum_validated": [
             "DE89370400440532013000",  # Known valid checksum
             "DE12500105170648489890",  # Deutsche Bank valid
-        ]
+        ],
     }
 
 
@@ -106,7 +107,7 @@ def invalid_iban_data():
             None,  # None value
             "DE",  # Country code only
             "XXXXXXXXXXXXXXXXXXXXXXXX",  # All Xs
-        ]
+        ],
     }
 
 
@@ -126,20 +127,20 @@ def payout_test_data():
                 "name": "Max Mustermann",
                 "iban": "DE89370400440532013000",
                 "amount": "350.00",
-                "reference": "Refund Invoice 10934"
+                "reference": "Refund Invoice 10934",
             },
             {
                 "name": "Acme Components GmbH",
                 "iban": "DE56370400440002222222",
                 "amount": "1280.50",
-                "reference": "Supplies Batch 81A"
+                "reference": "Supplies Batch 81A",
             },
             {
                 "name": "Web Hosting Services Ltd",
                 "iban": "DE78370400440003333333",
                 "amount": "49.99",
-                "reference": "SaaS Cloud Base"
-            }
+                "reference": "SaaS Cloud Base",
+            },
         ],
         "clipboard_tab_separated": """Max Mustermann\tDE89370400440532013000\t350.00\tRefund Invoice 10934
 Acme Components GmbH\tDE56370400440002222222\t1280,50\tSupplies Batch 81A
@@ -149,33 +150,33 @@ Web Hosting Services Ltd\tDE78370400440003333333\t49.99\tSaaS Cloud Base""",
                 "name": "",  # Empty name
                 "iban": "DE89370400440532013000",
                 "amount": "100.00",
-                "reference": "Test"
+                "reference": "Test",
             },
             {
                 "name": "Test User",
                 "iban": "",  # Empty IBAN
                 "amount": "100.00",
-                "reference": "Test"
+                "reference": "Test",
             },
             {
                 "name": "Test User",
                 "iban": "DE89370400440532013000",
                 "amount": "",  # Empty amount
-                "reference": "Test"
+                "reference": "Test",
             },
             {
                 "name": "Test User",
                 "iban": "DE89370400440532013000",
                 "amount": "invalid",  # Invalid amount
-                "reference": "Test"
+                "reference": "Test",
             },
             {
                 "name": "Test User",
                 "iban": "DE89370400440532013000",
                 "amount": "0.00",  # Zero amount
-                "reference": "Test"
-            }
-        ]
+                "reference": "Test",
+            },
+        ],
     }
 
 
@@ -254,35 +255,31 @@ def thread_coordinator():
     Provides synchronization primitives for testing thread-safe operations
     between GUI thread and FinTSWorker background thread.
     """
-    coordinator = {
-        'events': {},
-        'locks': {},
-        'timeouts': {}
-    }
+    coordinator = {"events": {}, "locks": {}, "timeouts": {}}
 
     def create_event(name):
-        coordinator['events'][name] = threading.Event()
-        return coordinator['events'][name]
+        coordinator["events"][name] = threading.Event()
+        return coordinator["events"][name]
 
     def create_lock(name):
-        coordinator['locks'][name] = threading.Lock()
-        return coordinator['locks'][name]
+        coordinator["locks"][name] = threading.Lock()
+        return coordinator["locks"][name]
 
     def wait_for_event(event_name, timeout=5.0):
         """Wait for a thread event with timeout."""
-        if event_name not in coordinator['events']:
+        if event_name not in coordinator["events"]:
             return False
-        return coordinator['events'][event_name].wait(timeout=timeout)
+        return coordinator["events"][event_name].wait(timeout=timeout)
 
     def set_event(event_name):
         """Set a thread event."""
-        if event_name in coordinator['events']:
-            coordinator['events'][event_name].set()
+        if event_name in coordinator["events"]:
+            coordinator["events"][event_name].set()
 
-    coordinator['create_event'] = create_event
-    coordinator['create_lock'] = create_lock
-    coordinator['wait'] = wait_for_event
-    coordinator['set'] = set_event
+    coordinator["create_event"] = create_event
+    coordinator["create_lock"] = create_lock
+    coordinator["wait"] = wait_for_event
+    coordinator["set"] = set_event
 
     return coordinator
 
@@ -312,7 +309,10 @@ def decimal_test_cases():
             (Decimal("1000000.00"), "1,000,000.00"),
         ],
         "calculation_cases": [
-            ([Decimal("100.00"), Decimal("200.00"), Decimal("50.00")], Decimal("350.00")),
+            (
+                [Decimal("100.00"), Decimal("200.00"), Decimal("50.00")],
+                Decimal("350.00"),
+            ),
             ([Decimal("0.01"), Decimal("0.02"), Decimal("0.03")], Decimal("0.06")),
             ([Decimal("1000.00"), Decimal("2000.00")], Decimal("3000.00")),
         ],
@@ -321,7 +321,7 @@ def decimal_test_cases():
             ("-100.00", Decimal("-100.00")),  # Negative amount
             ("invalid", None),  # Invalid input
             ("", None),  # Empty input
-        ]
+        ],
     }
 
 
@@ -353,7 +353,7 @@ Name2\tDE56370400440002222222\t200,50\tReference2
 Name2\tDE56370400440002222222\t200,00\tReference2""",
         "empty": "",
         "whitespace_only": "   \n   \n   ",
-        "single_row": "Name1\tDE89370400440532013000\t100.00\tReference1"
+        "single_row": "Name1\tDE89370400440532013000\t100.00\tReference1",
     }
 
 
@@ -392,7 +392,7 @@ def error_test_scenarios():
             "TAN event timeout",
             "Signal slot disconnected",
             "Worker already running",
-        ]
+        ],
     }
 
 
@@ -407,7 +407,7 @@ def fints_not_available():
 
     Tests application behavior when fints library is not installed.
     """
-    with patch('commerzbank_fints_qt_desktop_app.FINTS_AVAILABLE', False):
+    with patch("commerzbank_fints_qt_desktop_app.FINTS_AVAILABLE", False):
         yield
 
 
@@ -456,31 +456,28 @@ def signal_tracker():
     Provides a mechanism to track and verify Qt signal emissions
     during testing of thread coordination and GUI events.
     """
-    tracker = {
-        'signals': {},
-        'count': {}
-    }
+    tracker = {"signals": {}, "count": {}}
 
     def track(signal_name, *args):
-        if signal_name not in tracker['signals']:
-            tracker['signals'][signal_name] = []
-            tracker['count'][signal_name] = 0
-        tracker['signals'][signal_name].append(args)
-        tracker['count'][signal_name] += 1
+        if signal_name not in tracker["signals"]:
+            tracker["signals"][signal_name] = []
+            tracker["count"][signal_name] = 0
+        tracker["signals"][signal_name].append(args)
+        tracker["count"][signal_name] += 1
 
     def get_count(signal_name):
-        return tracker['count'].get(signal_name, 0)
+        return tracker["count"].get(signal_name, 0)
 
     def get_calls(signal_name):
-        return tracker['signals'].get(signal_name, [])
+        return tracker["signals"].get(signal_name, [])
 
     def reset():
-        tracker['signals'] = {}
-        tracker['count'] = {}
+        tracker["signals"] = {}
+        tracker["count"] = {}
 
-    tracker['track'] = track
-    tracker['get_count'] = get_count
-    tracker['get_calls'] = get_calls
-    tracker['reset'] = reset
+    tracker["track"] = track
+    tracker["get_count"] = get_count
+    tracker["get_calls"] = get_calls
+    tracker["reset"] = reset
 
     return tracker

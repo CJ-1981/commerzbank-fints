@@ -48,7 +48,7 @@ jobs:
 
       - name: Run Ruff formatting check
         run: |
-          ruff format --check commerzbank_fints_qt_desktop_app/ tests/
+          ruff format --check commerzbank_fints_qt_desktop_app.py tests/
 
       - name: Run type checking (mypy)
         run: |

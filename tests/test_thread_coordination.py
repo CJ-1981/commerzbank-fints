@@ -25,7 +25,14 @@ class TestFinTSWorkerThreadLifecycle:
 
     def test_worker_thread_initialization(self, main_window):
         """Test that FinTSWorker thread initializes correctly."""
-        payouts = [{"name": "Test", "iban": "DE89370400440532013000", "amount": "100.00", "reference": "Test"}]
+        payouts = [
+            {
+                "name": "Test",
+                "iban": "DE89370400440532013000",
+                "amount": "100.00",
+                "reference": "Test",
+            }
+        ]
 
         worker = FinTSWorker(
             blz="37040044",
@@ -33,19 +40,28 @@ class TestFinTSWorkerThreadLifecycle:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=payouts,
-            method="collective"
+            method="collective",
         )
 
         assert worker.isRunning() is False, "Worker should not be running initially"
         assert worker.blz == "37040044", "BLZ should be stored"
         assert worker.user_id == "1234567890", "User ID should be stored"
         assert worker.pin == "test1234", "PIN should be stored"
-        assert worker.tan_event.is_set() is False, "TAN event should not be set initially"
+        assert worker.tan_event.is_set() is False, (
+            "TAN event should not be set initially"
+        )
         assert worker.is_cancelled is False, "Worker should not be cancelled initially"
 
     def test_worker_thread_starts_correctly(self, main_window):
         """Test that worker thread can be started."""
-        payouts = [{"name": "Test", "iban": "DE89370400440532013000", "amount": "100.00", "reference": "Test"}]
+        payouts = [
+            {
+                "name": "Test",
+                "iban": "DE89370400440532013000",
+                "amount": "100.00",
+                "reference": "Test",
+            }
+        ]
 
         worker = FinTSWorker(
             blz="37040044",
@@ -53,12 +69,14 @@ class TestFinTSWorkerThreadLifecycle:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=payouts,
-            method="collective"
+            method="collective",
         )
 
         # Mock the FinTS client to prevent real network calls
-        with patch('commerzbank_fints_qt_desktop_app.FINTS_AVAILABLE', True):
-            with patch('commerzbank_fints_qt_desktop_app.FinTS3PinTanClient') as mock_client_class:
+        with patch("commerzbank_fints_qt_desktop_app.FINTS_AVAILABLE", True):
+            with patch(
+                "commerzbank_fints_qt_desktop_app.FinTS3PinTanClient"
+            ) as mock_client_class:
                 mock_client = MagicMock()
                 mock_account = MagicMock()
                 mock_account.iban = "DE89370400440532013000"
@@ -70,7 +88,9 @@ class TestFinTSWorkerThreadLifecycle:
                 worker.start()
                 # Give thread time to start
                 time.sleep(0.1)
-                assert worker.isRunning() is True, "Worker should be running after start()"
+                assert worker.isRunning() is True, (
+                    "Worker should be running after start()"
+                )
 
                 # Cleanup
                 worker.is_cancelled = True
@@ -79,7 +99,14 @@ class TestFinTSWorkerThreadLifecycle:
 
     def test_worker_thread_finished_signal(self, main_window):
         """Test that worker emits finished_signal when complete."""
-        payouts = [{"name": "Test", "iban": "DE89370400440532013000", "amount": "100.00", "reference": "Test"}]
+        payouts = [
+            {
+                "name": "Test",
+                "iban": "DE89370400440532013000",
+                "amount": "100.00",
+                "reference": "Test",
+            }
+        ]
 
         worker = FinTSWorker(
             blz="37040044",
@@ -87,7 +114,7 @@ class TestFinTSWorkerThreadLifecycle:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=payouts,
-            method="collective"
+            method="collective",
         )
 
         # Track finished signal emissions
@@ -99,8 +126,10 @@ class TestFinTSWorkerThreadLifecycle:
         worker.finished_signal.connect(track_finished)
 
         # Mock the FinTS client
-        with patch('commerzbank_fints_qt_desktop_app.FINTS_AVAILABLE', True):
-            with patch('commerzbank_fints_qt_desktop_app.FinTS3PinTanClient') as mock_client_class:
+        with patch("commerzbank_fints_qt_desktop_app.FINTS_AVAILABLE", True):
+            with patch(
+                "commerzbank_fints_qt_desktop_app.FinTS3PinTanClient"
+            ) as mock_client_class:
                 mock_client = MagicMock()
                 mock_account = MagicMock()
                 mock_account.iban = "DE89370400440532013000"
@@ -120,7 +149,14 @@ class TestSignalSlotCommunication:
 
     def test_log_signal_emission(self, main_window):
         """Test that worker emits log_signal correctly."""
-        payouts = [{"name": "Test", "iban": "DE89370400440532013000", "amount": "100.00", "reference": "Test"}]
+        payouts = [
+            {
+                "name": "Test",
+                "iban": "DE89370400440532013000",
+                "amount": "100.00",
+                "reference": "Test",
+            }
+        ]
 
         worker = FinTSWorker(
             blz="37040044",
@@ -128,7 +164,7 @@ class TestSignalSlotCommunication:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=payouts,
-            method="collective"
+            method="collective",
         )
 
         # Track log signal emissions
@@ -145,9 +181,15 @@ class TestSignalSlotCommunication:
         worker.log("Success message", "success")
 
         assert len(log_calls) == 3, "Should emit 3 log signals"
-        assert log_calls[0] == ("Test message", "#e2e8f0"), "First log should have default color"
-        assert log_calls[1] == ("Error message", "#f87171"), "Error log should have red color"
-        assert log_calls[2] == ("Success message", "#34d399"), "Success log should have green color"
+        assert log_calls[0] == ("Test message", "#e2e8f0"), (
+            "First log should have default color"
+        )
+        assert log_calls[1] == ("Error message", "#f87171"), (
+            "Error log should have red color"
+        )
+        assert log_calls[2] == ("Success message", "#34d399"), (
+            "Success log should have green color"
+        )
 
     def test_request_tan_signal_emission(self, main_window):
         """Test that worker emits request_tan_signal for TAN challenges."""
@@ -157,7 +199,7 @@ class TestSignalSlotCommunication:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=[],
-            method="collective"
+            method="collective",
         )
 
         # Track TAN request signal emissions
@@ -172,14 +214,22 @@ class TestSignalSlotCommunication:
         worker.request_tan_signal.emit("Please confirm in photoTAN app", False)
 
         assert len(tan_requests) == 1, "Should emit one TAN request"
-        assert tan_requests[0] == ("Please confirm in photoTAN app", False), "TAN request should match"
+        assert tan_requests[0] == ("Please confirm in photoTAN app", False), (
+            "TAN request should match"
+        )
 
     def test_signal_slot_connection_in_main_app(self, main_window):
         """Test that main app properly connects worker signals."""
         # The main app should connect worker signals when starting execution
-        assert hasattr(main_window, 'append_terminal_message'), "App should have terminal message handler"
-        assert hasattr(main_window, 'prompt_user_for_tan'), "App should have TAN prompt handler"
-        assert hasattr(main_window, 'on_worker_finished'), "App should have worker finished handler"
+        assert hasattr(main_window, "append_terminal_message"), (
+            "App should have terminal message handler"
+        )
+        assert hasattr(main_window, "prompt_user_for_tan"), (
+            "App should have TAN prompt handler"
+        )
+        assert hasattr(main_window, "on_worker_finished"), (
+            "App should have worker finished handler"
+        )
 
 
 class TestTANEventSynchronization:
@@ -193,7 +243,7 @@ class TestTANEventSynchronization:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=[],
-            method="collective"
+            method="collective",
         )
 
         assert worker.tan_event.is_set() is False, "TAN event should be unset initially"
@@ -207,7 +257,7 @@ class TestTANEventSynchronization:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=[],
-            method="collective"
+            method="collective",
         )
 
         worker.set_tan("123456")
@@ -223,7 +273,7 @@ class TestTANEventSynchronization:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=[],
-            method="collective"
+            method="collective",
         )
 
         worker.cancel_tan()
@@ -239,17 +289,21 @@ class TestTANEventSynchronization:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=[],
-            method="collective"
+            method="collective",
         )
 
         # Test that wait returns False when event is not set
-        assert worker.tan_event.wait(0.1) is False, "Wait should timeout when event not set"
+        assert worker.tan_event.wait(0.1) is False, (
+            "Wait should timeout when event not set"
+        )
 
         # Set the event
         worker.set_tan("123456")
 
         # Test that wait returns True when event is set
-        assert worker.tan_event.wait(0.1) is True, "Wait should succeed when event is set"
+        assert worker.tan_event.wait(0.1) is True, (
+            "Wait should succeed when event is set"
+        )
 
     def test_tan_event_clear_and_wait_cycle(self, main_window):
         """Test the clear -> wait -> set cycle used in TAN flow."""
@@ -259,7 +313,7 @@ class TestTANEventSynchronization:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=[],
-            method="collective"
+            method="collective",
         )
 
         # Initial state
@@ -286,7 +340,7 @@ class TestThreadSafety:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=[],
-            method="collective"
+            method="collective",
         )
 
         # Simulate concurrent access from multiple threads
@@ -315,7 +369,7 @@ class TestThreadSafety:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=[],
-            method="collective"
+            method="collective",
         )
 
         # Simulate cancellation from multiple threads
@@ -336,7 +390,14 @@ class TestThreadSafety:
 
     def test_worker_state_consistency(self, main_window):
         """Test that worker state remains consistent across thread boundaries."""
-        payouts = [{"name": "Test", "iban": "DE89370400440532013000", "amount": "100.00", "reference": "Test"}]
+        payouts = [
+            {
+                "name": "Test",
+                "iban": "DE89370400440532013000",
+                "amount": "100.00",
+                "reference": "Test",
+            }
+        ]
 
         worker = FinTSWorker(
             blz="37040044",
@@ -344,7 +405,7 @@ class TestThreadSafety:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=payouts,
-            method="collective"
+            method="collective",
         )
 
         # Verify initial state
@@ -352,7 +413,7 @@ class TestThreadSafety:
         initial_method = worker.method
 
         # Mock execution
-        with patch('commerzbank_fints_qt_desktop_app.FINTS_AVAILABLE', False):
+        with patch("commerzbank_fints_qt_desktop_app.FINTS_AVAILABLE", False):
             worker.run()
 
         # Verify state is unchanged
@@ -366,7 +427,12 @@ class TestThreadCancellation:
     def test_worker_cancellation_stops_processing(self, main_window):
         """Test that setting is_cancelled stops worker processing."""
         payouts = [
-            {"name": f"Test{i}", "iban": "DE89370400440532013000", "amount": "100.00", "reference": "Test"}
+            {
+                "name": f"Test{i}",
+                "iban": "DE89370400440532013000",
+                "amount": "100.00",
+                "reference": "Test",
+            }
             for i in range(5)
         ]
 
@@ -376,15 +442,17 @@ class TestThreadCancellation:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=payouts,
-            method="individual"
+            method="individual",
         )
 
         # Set cancellation flag
         worker.is_cancelled = True
 
         # Mock the FinTS client
-        with patch('commerzbank_fints_qt_desktop_app.FINTS_AVAILABLE', True):
-            with patch('commerzbank_fints_qt_desktop_app.FinTS3PinTanClient') as mock_client_class:
+        with patch("commerzbank_fints_qt_desktop_app.FINTS_AVAILABLE", True):
+            with patch(
+                "commerzbank_fints_qt_desktop_app.FinTS3PinTanClient"
+            ) as mock_client_class:
                 mock_client = MagicMock()
                 mock_account = MagicMock()
                 mock_account.iban = "DE89370400440532013000"
@@ -406,7 +474,7 @@ class TestThreadCancellation:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=[],
-            method="collective"
+            method="collective",
         )
 
         # Test timeout on event.wait()
@@ -438,7 +506,10 @@ class TestConcurrentOperations:
 
             # Should log error message about worker already running
             terminal_text = main_window.log_terminal.toPlainText()
-            assert "already executing" in terminal_text.lower() or "cannot run" in terminal_text.lower()
+            assert (
+                "already executing" in terminal_text.lower()
+                or "cannot run" in terminal_text.lower()
+            )
 
             # Cleanup
             first_worker.is_cancelled = True
@@ -447,7 +518,14 @@ class TestConcurrentOperations:
 
     def test_worker_cleanup_on_completion(self, main_window):
         """Test that worker resources are cleaned up on completion."""
-        payouts = [{"name": "Test", "iban": "DE89370400440532013000", "amount": "100.00", "reference": "Test"}]
+        payouts = [
+            {
+                "name": "Test",
+                "iban": "DE89370400440532013000",
+                "amount": "100.00",
+                "reference": "Test",
+            }
+        ]
 
         worker = FinTSWorker(
             blz="37040044",
@@ -455,11 +533,11 @@ class TestConcurrentOperations:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=payouts,
-            method="collective"
+            method="collective",
         )
 
         # Mock execution
-        with patch('commerzbank_fints_qt_desktop_app.FINTS_AVAILABLE', False):
+        with patch("commerzbank_fints_qt_desktop_app.FINTS_AVAILABLE", False):
             worker.run()
             worker.wait(2000)
 
@@ -480,7 +558,7 @@ class TestTANChallengeFlow:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=[],
-            method="collective"
+            method="collective",
         )
 
         # Create mock NeedTANResponse with decoupled flag
@@ -518,7 +596,7 @@ class TestTANChallengeFlow:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=[],
-            method="collective"
+            method="collective",
         )
 
         # Create mock NeedTANResponse without decoupled flag
@@ -557,7 +635,7 @@ class TestTANChallengeFlow:
             pin="test1234",
             debtor_iban="DE89370400440532013000",
             payouts=[],
-            method="collective"
+            method="collective",
         )
 
         # Create mock NeedTANResponse
