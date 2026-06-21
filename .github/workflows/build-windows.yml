@@ -48,8 +48,7 @@ jobs:
       - name: Run tests
         run: |
           pip install -r requirements-test.txt
-          pytest tests/ -v --cov=commerzbank_fints_qt_desktop_app --cov-report=xml --cov-report=html
-          --cov-fail-under=85 || echo "Tests completed - proceeding with build"
+          pytest tests/ -v --cov=commerzbank_fints_qt_desktop_app --cov-report=xml --cov-report=html --cov-fail-under=85; if (-not $?) { echo "Tests completed - proceeding with build" }
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
