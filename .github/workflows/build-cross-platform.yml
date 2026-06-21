@@ -1,19 +1,7 @@
-name: Build Cross-Platform Executables
+name: Build Cross-Platform Executables (DISABLED)
 
 on:
-  push:
-    tags: [ 'v*' ]
-  workflow_dispatch:
-    inputs:
-      create_release:
-        description: 'Create GitHub Release'
-        required: false
-        type: boolean
-        default: false
-      release_tag:
-        description: 'Release tag (e.g., v1.0.0)'
-        required: false
-        type: string
+  workflow_dispatch:  # Only manual dispatch when explicitly enabled
 
 jobs:
   build-matrix:

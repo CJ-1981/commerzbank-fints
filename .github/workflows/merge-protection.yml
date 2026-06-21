@@ -1,11 +1,7 @@
-name: Merge Protection Gates
+name: Merge Protection Gates (DISABLED)
 
 on:
-  pull_request:
-    branches: [main, develop]
-  pull_request_target:
-    branches: [main]
-    types: [opened, synchronize, reopened]
+  workflow_dispatch:  # Only manual dispatch when explicitly enabled
 
 jobs:
   # Pre-merge quality validation

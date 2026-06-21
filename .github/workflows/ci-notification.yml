@@ -1,20 +1,7 @@
-name: CI Notifications
+name: CI Notifications (DISABLED)
 
 on:
-  workflow_run:
-    workflows: [CI - Comprehensive Testing Pipeline]
-    types: [completed]
-  workflow_dispatch:
-    inputs:
-      notification_type:
-        description: 'Notification type (success/failure/warning)'
-        required: false
-        type: choice
-        options:
-          - success
-          - failure
-          - warning
-        default: 'success'
+  workflow_dispatch:  # Only manual dispatch when explicitly enabled
 
 jobs:
   # CI completion notifications

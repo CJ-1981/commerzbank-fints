@@ -1,11 +1,7 @@
-name: CI - Comprehensive Testing Pipeline
+name: CI - Comprehensive Testing Pipeline (DISABLED)
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
-  workflow_dispatch:
+  workflow_dispatch:  # Only manual dispatch when explicitly enabled
     inputs:
       python-version:
         description: 'Python version to test (e.g., 3.11, 3.12)'

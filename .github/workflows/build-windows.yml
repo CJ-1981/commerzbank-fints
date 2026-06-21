@@ -1,6 +1,7 @@
-name: Build Windows Executable
+name: Build Windows Executable (DISABLED)
 
 on:
+  workflow_dispatch:  # Only allow manual dispatch when explicitly enabled
   push:
     branches: [ main ]
     tags: [ 'v*' ]
@@ -134,7 +135,7 @@ jobs:
             "version=$version" | Add-Content -Path $env:GITHUB_OUTPUT
             Write-Host "Tagged version: $version"
           } else {
-            $version = "dev-${{ github.sha }}".Substring(0, 7)
+            $version = "dev-${{ github.sha }}".Substring(0, [Math]::Min(7, ${{ github.sha }}.Length))
             "version=$version" | Add-Content -Path $env:GITHUB_OUTPUT
             Write-Host "Development version: $version"
           }
