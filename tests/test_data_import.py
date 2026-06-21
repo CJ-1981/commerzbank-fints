@@ -14,10 +14,8 @@ Coverage Areas:
 - Table event handling
 """
 
-import pytest
 from PyQt6.QtWidgets import QTableWidgetItem, QApplication
-from PyQt6.QtCore import Qt
-from commerzbank_fints_qt_desktop_app import CommerzbankFinTSApp
+from PyQt6.QtTest import QTest
 
 
 class TestClipboardParsing:
@@ -313,7 +311,6 @@ class TestBatchCalculationUpdates:
 
     def test_batch_calculation_on_row_add(self, main_window):
         """Test that batch calculations update when row is added."""
-        from decimal import Decimal
 
         # Clear existing rows
         main_window.table.setRowCount(0)
@@ -344,9 +341,6 @@ class TestBatchCalculationUpdates:
             main_window.table.setItem(i, 2, QTableWidgetItem(f"{(i + 1) * 100}.00"))
 
         main_window.update_batch_calculations()
-
-        # Total should be 100 + 200 + 300 = 600
-        total_before = main_window.lbl_batch_total.text()
 
         # Delete last row
         main_window.table.selectRow(2)

@@ -8,7 +8,7 @@ import pytest
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 from PyQt6.QtWidgets import QApplication
-from PyQt6.QtCore import Qt, QThread
+from PyQt6.QtCore import Qt
 import sys
 import threading
 
@@ -216,7 +216,7 @@ def mock_fints_worker():
     synchronization, signal emission, and error handling.
     """
     from unittest.mock import Mock
-    from PyQt6.QtCore import QObject, pyqtSignal
+    from PyQt6.QtCore import pyqtSignal
 
     # Create a mock worker with signal tracking
     worker = Mock()

@@ -44,7 +44,7 @@ jobs:
 
       - name: Run Ruff linting
         run: |
-          ruff check commerzbank_fints_qt_desktop_app/ tests/ --output-format=github
+          ruff check commerzbank_fints_qt_desktop_app.py tests/ --output-format=github
 
       - name: Run Ruff formatting check
         run: |

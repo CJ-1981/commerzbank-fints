@@ -14,10 +14,7 @@ Coverage Areas:
 - Graceful degradation
 """
 
-import pytest
-from unittest.mock import Mock, MagicMock, patch
-from PyQt6.QtWidgets import QMessageBox
-from commerzbank_fints_qt_desktop_app import CommerzbankFinTSApp, FinTSWorker
+from unittest.mock import MagicMock, patch
 
 
 class TestFinTSLibraryExceptions:
