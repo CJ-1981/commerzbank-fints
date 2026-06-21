@@ -61,7 +61,7 @@ jobs:
       - name: Run tests
         run: |
           pip install -r requirements-test.txt
-          pytest tests/ -v --cov=commerzbank_fints_qt_desktop_app --cov-report=xml || echo "Tests skipped - focusing on build"
+          pytest tests/ -v --cov=commerzbank_fints_qt_desktop_app --cov-report=xml; if (-not $?) { echo "Tests skipped - focusing on build" }
 
       - name: Build with PyInstaller
         run: |

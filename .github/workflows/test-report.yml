@@ -25,10 +25,14 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install application module first
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-html pytest-json-report
+          pip install -e .
+
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-html pytest-json-report -r requirements-test.txt
 
       - name: Download test results
         uses: actions/download-artifact@v4
@@ -38,11 +42,11 @@ jobs:
 
       - name: Generate HTML report
         run: |
-          pytest tests/ --html=test-report.html --self-contained-html --junitxml=test-report.xml || true
+          pytest tests/ --html=test-report.html --self-contained-html --junitxml=test-report.xml; if (-not $?) { exit 0 }
 
       - name: Generate JSON report
         run: |
-          pytest tests/ --json-report --json-report-file=test-report.json || true
+          pytest tests/ --json-report --json-report-file=test-report.json; if (-not $?) { exit 0 }
 
       - name: Upload test reports
         if: always()
