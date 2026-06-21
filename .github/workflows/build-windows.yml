@@ -118,7 +118,7 @@ jobs:
 
       - name: Create installer directory
         run: |
-          mkdir installer
+          mkdir installer 2>nul || echo Directory exists
           copy dist\CommerzbankFinTS_Payout_Automator.exe installer\
           copy README.md installer\
           copy LICENSE installer\

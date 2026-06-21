@@ -127,7 +127,7 @@ jobs:
       - name: Create package (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          mkdir installer
+          mkdir installer 2>$null || echo "Directory exists or creation failed"
           copy dist\CommerzbankFinTS_Payout_Automator.exe installer\
           copy README.md installer\
           copy LICENSE installer\

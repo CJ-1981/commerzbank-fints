@@ -222,7 +222,7 @@ jobs:
 
       - name: Aggregate coverage
         run: |
-          if [ -f "coverage-reports/*/coverage.xml" ]; then
+          if [ -d "coverage-reports" ] && [ $(find coverage-reports -name "coverage.xml" | wc -l) -gt 0 ]; then
             coverage combine coverage-reports/*/coverage.xml || echo "No coverage files to combine"
             coverage report --fail-under=${{ env.COVERAGE_THRESHOLD }} || echo "Coverage threshold not met"
             coverage html -d htmlcov-aggregated || echo "HTML coverage generation failed"
