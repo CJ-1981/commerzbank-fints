@@ -14,6 +14,7 @@ Coverage Areas:
 - Rounding behavior
 """
 
+import pytest
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 

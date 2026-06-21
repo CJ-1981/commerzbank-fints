@@ -16,8 +16,7 @@ Coverage Areas:
 
 import threading
 import time
-from unittest.mock import Mock, MagicMock, patch
-from PyQt6.QtCore import QThread
+from unittest.mock import MagicMock, patch
 from commerzbank_fints_qt_desktop_app import FinTSWorker
 
 
@@ -504,7 +503,7 @@ class TestTANChallengeFlow:
         worker.request_tan_signal.connect(track_tan_request)
 
         # Run the TAN challenge loop
-        result = worker.handle_tan_challenge_loop(mock_client, mock_response)
+        worker.handle_tan_challenge_loop(mock_client, mock_response)
 
         assert len(tan_requests) == 1, "Should request TAN once"
         assert tan_requests[0][1] is True, "Should be decoupled request"
@@ -542,7 +541,7 @@ class TestTANChallengeFlow:
         worker.request_tan_signal.connect(track_tan_request)
 
         # Run the TAN challenge loop
-        result = worker.handle_tan_challenge_loop(mock_client, mock_response)
+        worker.handle_tan_challenge_loop(mock_client, mock_response)
 
         assert len(tan_requests) == 1, "Should request TAN once"
         assert tan_requests[0][1] is False, "Should be manual TAN request"
@@ -580,7 +579,7 @@ class TestTANChallengeFlow:
         worker.request_tan_signal.connect(track_tan_request)
 
         # Run the TAN challenge loop
-        result = worker.handle_tan_challenge_loop(mock_client, mock_response)
+        worker.handle_tan_challenge_loop(mock_client, mock_response)
 
         assert len(tan_requests) == 1, "Should request TAN once"
         assert worker.is_cancelled is True, "Cancellation flag should be set"
