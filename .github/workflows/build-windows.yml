@@ -79,6 +79,7 @@ jobs:
         run: |
           mkdir build-assets
           echo "Icon directory created"
+        shell: cmd
 
       - name: Build with PyInstaller (standard spec)
         id: standard_build
