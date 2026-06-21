@@ -243,7 +243,7 @@ class TestTableRowOperations:
         """Test adding multiple rows."""
         initial_count = main_window.table.rowCount()
 
-        for i in range(5):
+        for _ in range(5):
             main_window.add_table_row()
 
         assert main_window.table.rowCount() == initial_count + 5, "Should add 5 rows"
@@ -252,17 +252,21 @@ class TestTableRowOperations:
         """Test deleting a single row."""
         # Add a row to delete
         main_window.add_table_row()
+        QApplication.processEvents()  # Process Qt events
+
         row_count_before = main_window.table.rowCount()
 
         # Select the last row
         last_row = row_count_before - 1
         main_window.table.selectRow(last_row)
+        QApplication.processEvents()  # Process Qt events after selection
 
         # Delete the selected row
         main_window.delete_selected_row()
+        QApplication.processEvents()  # Process Qt events after deletion
 
         assert main_window.table.rowCount() == row_count_before - 1, (
-            "Should delete 1 row"
+            f"Should delete 1 row, got {main_window.table.rowCount()} rows"
         )
 
     def test_delete_multiple_rows(self, main_window):
@@ -270,6 +274,9 @@ class TestTableRowOperations:
         # Add rows to delete
         for i in range(3):
             main_window.add_table_row()
+
+        # Process Qt events after adding rows
+        QApplication.processEvents()
 
         row_count_before = main_window.table.rowCount()
 
@@ -280,11 +287,17 @@ class TestTableRowOperations:
             main_window.model().index(row_count_before - 1, 3),
         )
 
+        # Process Qt events after selection
+        QApplication.processEvents()
+
         # Delete selected rows
         main_window.delete_selected_row()
 
+        # Process Qt events after deletion
+        QApplication.processEvents()
+
         assert main_window.table.rowCount() == row_count_before - 3, (
-            "Should delete 3 rows"
+            f"Should delete 3 rows, got {main_window.table.rowCount()} rows"
         )
 
     def test_delete_row_without_selection(self, main_window):
@@ -331,7 +344,7 @@ class TestTableRowOperations:
     def test_clear_all_rows(self, main_window):
         """Test clearing all rows from table."""
         # Add some rows
-        for i in range(5):
+        for _ in range(5):
             main_window.add_table_row()
 
         # Clear all rows
