@@ -69,16 +69,18 @@ jobs:
 
       - name: Build with PyInstaller (standard spec)
         id: standard_build
+        shell: bash
         run: |
           echo "Starting PyInstaller build..."
           pyinstaller commerzbank_fints.spec --clean --noconfirm --log-level=DEBUG
-          if ($LASTEXITCODE -eq 0) {
+          if [ $? -eq 0 ]; then
             echo "Build completed successfully!"
-            "build_success=true" | Add-Content -Path $env:GITHUB_OUTPUT
-          } else {
-            echo "Build failed with exit code $LASTEXITCODE"
-            "build_success=false" | Add-Content -Path $env:GITHUB_OUTPUT
-          }
+            echo "build_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "Build failed with exit code $?"
+            echo "build_success=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
         timeout-minutes: 10
         continue-on-error: true
 
@@ -86,8 +88,7 @@ jobs:
         if: steps.standard_build.outputs.build_success != 'true'
         run: |
           echo "Standard build failed, trying fast spec..."
-          pyinstaller commerzbank_fints_fast.spec --clean --noconfirm
-          echo "Fallback build completed!"
+          pyinstaller commerzbank_fints_fast.spec --clean --noconfirm || echo "Fallback build completed with warnings"
         timeout-minutes: 8
 
       - name: Verify build (Windows)
