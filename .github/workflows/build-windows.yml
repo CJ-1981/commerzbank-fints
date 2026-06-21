@@ -96,14 +96,14 @@ jobs:
       - name: Create version info
         id: version
         run: |
-          if ("${{ github.ref_type }}" -eq "tag") {
-            $version = "${{ github.ref_name }}" -replace "v", ""
-            echo "version=$version" >> $env:GITHUB_OUTPUT
-            echo "Tagged version: $version"
+          if ('${{ github.ref_type }}' -eq 'tag') {
+            $version = '${{ github.ref_name }}' -replace 'v', ''
+            "version=$version" | Add-Content -Path $env:GITHUB_OUTPUT
+            Write-Host "Tagged version: $version"
           } else {
-            $version = "dev-${{ github.sha.Substring(0, 7) }}"
-            echo "version=$version" >> $env:GITHUB_OUTPUT
-            echo "Development version: $version"
+            $version = "dev-${{ github.sha }}".Substring(0, 7)
+            "version=$version" | Add-Content -Path $env:GITHUB_OUTPUT
+            Write-Host "Development version: $version"
           }
         shell: pwsh
 
