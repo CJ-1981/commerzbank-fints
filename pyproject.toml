@@ -37,10 +37,6 @@ commerzbank-fints = "commerzbank_fints_qt_desktop_app:main"
 [tool.setuptools]
 py-modules = ["commerzbank_fints_qt_desktop_app"]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["commerzbank_fints_qt_desktop_app*"]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
