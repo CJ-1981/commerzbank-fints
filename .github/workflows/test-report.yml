@@ -42,11 +42,11 @@ jobs:
 
       - name: Generate HTML report
         run: |
-          pytest tests/ --html=test-report.html --self-contained-html --junitxml=test-report.xml; if (-not $?) { exit 0 }
+          pytest tests/ --html=test-report.html --self-contained-html --junitxml=test-report.xml || true
 
       - name: Generate JSON report
         run: |
-          pytest tests/ --json-report --json-report-file=test-report.json; if (-not $?) { exit 0 }
+          pytest tests/ --json-report --json-report-file=test-report.json || true
 
       - name: Upload test reports
         if: always()
