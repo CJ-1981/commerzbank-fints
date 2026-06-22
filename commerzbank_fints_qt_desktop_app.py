@@ -36,15 +36,21 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QColor
 
 # Import open-source FinTS client libraries
+# Import exceptions separately - they always exist
+from fints.exceptions import FinTSClientPINError, FinTSClientError
+
+# Try to import optional components that may not exist in all versions
 try:
     from fints.client import FinTS3PinTanClient
     from fints.models import SEPATransferOrder
-    from fints.exceptions import FinTSClientPINError
     from fints.dialog import NeedTANResponse
-
     FINTS_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     FINTS_AVAILABLE = False
+    # Define placeholders if imports fail
+    FinTS3PinTanClient = None
+    SEPATransferOrder = None
+    NeedTANResponse = None
 
 
 class FinTSWorker(QThread):
@@ -92,9 +98,9 @@ class FinTSWorker(QThread):
         self.tan_event.set()
 
     def run(self):
-        if not FINTS_AVAILABLE:
+        if not FINTS_AVAILABLE or FinTS3PinTanClient is None:
             self.log(
-                "[-] Python library 'fints' is not installed. Run 'pip install fints'",
+                "[-] Python library 'fints' is not installed or API has changed. Run 'pip install fints'",
                 "error",
             )
             self.finished_signal.emit(False, "Missing dependencies")
@@ -157,6 +163,16 @@ class FinTSWorker(QThread):
         self.log(
             f"[*] Bundling {len(self.payouts)} payouts into a single Collective SEPA order (Sammelüberweisung)..."
         )
+
+        # Check if SEPATransferOrder is available (may not exist in newer fints versions)
+        if SEPATransferOrder is None:
+            self.log(
+                "[-] SEPATransferOrder class not available in current fints library version. API may have changed.",
+                "error",
+            )
+            self.finished_signal.emit(False, "API incompatibility - update code for current fints version")
+            return
+
         orders = []
         for p in self.payouts:
             orders.append(
@@ -224,6 +240,14 @@ class FinTSWorker(QThread):
 
     def handle_tan_challenge_loop(self, client, response):
         """Interactively halts the background thread to poll the user for photoTAN approval."""
+        # Check if NeedTANResponse is available (may not exist in newer fints versions)
+        if NeedTANResponse is None:
+            self.log(
+                "[-] NeedTANResponse class not available in current fints library version. API may have changed.",
+                "error",
+            )
+            return response
+
         res = response
         while isinstance(res, NeedTANResponse) and not self.is_cancelled:
             self.log("-" * 65, "warning")
@@ -656,6 +680,10 @@ class CommerzbankFinTSApp(QMainWindow):
         self.update_batch_calculations()
 
     def validate_iban_mod97(self, iban):
+        # Handle None and non-string inputs
+        if iban is None or not isinstance(iban, str):
+            return False
+
         iban = iban.replace(" ", "").upper()
         if len(iban) < 15:
             return False
@@ -686,7 +714,16 @@ class CommerzbankFinTSApp(QMainWindow):
 
             if amount_item:
                 try:
-                    val = Decimal(amount_item.text().strip() or "0")
+                    # Handle both dot (100.50) and comma (100,50) decimal separators
+                    amount_text = amount_item.text().strip() or "0"
+                    # First handle German format: 1.234,56 -> remove thousands dot, replace decimal comma
+                    if "," in amount_text and "." in amount_text:
+                        # German format: "1.234,56"
+                        amount_text = amount_text.replace(".", "").replace(",", ".")
+                    elif "," in amount_text:
+                        # Simple comma decimal: "100,50"
+                        amount_text = amount_text.replace(",", ".")
+                    val = Decimal(amount_text)
                     total_sum += val
                 except (InvalidOperation, ValueError):
                     pass
@@ -780,6 +817,9 @@ class CommerzbankFinTSApp(QMainWindow):
     @pyqtSlot(str, bool)
     def prompt_user_for_tan(self, challenge, is_decoupled):
         """Displays dialog prompting the user for photoTAN authentication."""
+        if self.worker is None:
+            return
+
         if is_decoupled:
             msg_box = QMessageBox(self)
             msg_box.setWindowTitle("photoTAN App Confirmation")

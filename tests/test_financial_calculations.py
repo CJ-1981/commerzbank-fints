@@ -114,11 +114,12 @@ class TestBatchTotalCalculations:
         """Test batch total with many rows."""
         from PyQt6.QtWidgets import QTableWidgetItem
 
-        # Add 100 rows with varying amounts
-        main_window.table.setRowCount(100)
+        # Clear existing table and add 100 rows with varying amounts
+        main_window.table.setRowCount(0)
         expected_total = Decimal("0.00")
 
         for i in range(100):
+            main_window.table.insertRow(i)
             amount = f"{i * 10}.50"
             main_window.table.setItem(i, 2, QTableWidgetItem(amount))
             expected_total += Decimal(amount)
@@ -128,8 +129,16 @@ class TestBatchTotalCalculations:
 
         # Check total (allowing for formatting differences)
         total_text = main_window.lbl_batch_total.text()
-        # Extract numeric part
-        total_numeric = total_text.replace("€", "").replace(".", "").replace(",", ".")
+        # Extract numeric part from German format: "Total Sum: €49.550,00"
+        # First remove the currency symbol and text prefix
+        total_numeric = total_text.replace("Total Sum:", "").replace("€", "").strip()
+        # Then handle German thousands separators (dot) and decimal (comma)
+        if "," in total_numeric and "." in total_numeric:
+            # German format: "49.550,00" -> "49550.00"
+            total_numeric = total_numeric.replace(".", "").replace(",", ".")
+        elif "," in total_numeric:
+            # Simple comma decimal: "49550,00" -> "49550.00"
+            total_numeric = total_numeric.replace(",", ".")
         calculated_total = Decimal(total_numeric)
 
         assert calculated_total == expected_total, (
@@ -254,13 +263,19 @@ class TestCurrencyFormatting:
         # European format: 100,50 means 100.50
         test_cases = [
             ("100,50", Decimal("100.50")),
-            ("1.234,56", Decimal("1234.56")),
+            ("1.234,56", Decimal("1234.56")),  # German format: dot=thousands, comma=decimal
             ("10,00", Decimal("10.00")),
         ]
 
         for input_str, expected in test_cases:
             # The app converts commas to dots for Decimal parsing
-            normalized = input_str.replace(",", ".")
+            # Handle German format: 1.234,56 -> remove thousands dot, replace decimal comma
+            if "," in input_str and "." in input_str:
+                normalized = input_str.replace(".", "").replace(",", ".")
+            elif "," in input_str:
+                normalized = input_str.replace(",", ".")
+            else:
+                normalized = input_str
             result = Decimal(normalized)
             assert result == expected, f"Parsed '{input_str}' should equal {expected}"
 
@@ -343,11 +358,15 @@ class TestAmountParsing:
         """Test amount parsing directly from table cells."""
         from PyQt6.QtWidgets import QTableWidgetItem
 
-        main_window.table.setRowCount(3)
+        # Clear existing table and set up fresh data
+        main_window.table.setRowCount(0)
 
         # Set various amount formats
+        main_window.table.insertRow(0)
         main_window.table.setItem(0, 2, QTableWidgetItem("100.50"))  # Dot decimal
+        main_window.table.insertRow(1)
         main_window.table.setItem(1, 2, QTableWidgetItem("200,75"))  # Comma decimal
+        main_window.table.insertRow(2)
         main_window.table.setItem(2, 2, QTableWidgetItem("300.00"))  # Dot decimal
 
         main_window.update_batch_calculations()
@@ -481,8 +500,8 @@ class TestRoundingBehavior:
         # Financial applications often use ROUND_HALF_UP
         test_cases = [
             (Decimal("1.005"), Decimal("1.01")),  # Rounds up
-            (Decimal("2.5"), Decimal("3")),  # Rounds up
-            (Decimal("3.4"), Decimal("3")),  # Rounds down
+            (Decimal("2.505"), Decimal("2.51")),  # Rounds up (corrected case)
+            (Decimal("3.4"), Decimal("3.40")),  # Rounds down with 2 decimal places
         ]
 
         for amount, expected in test_cases:

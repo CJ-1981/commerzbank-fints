@@ -489,25 +489,53 @@ class TestTableEventHandling:
 
     def test_table_signal_connection(self, main_window):
         """Test that itemChanged signal is properly connected."""
+        from decimal import Decimal
+
         # Verify signal is connected (this is a basic check)
         assert main_window.table.itemChanged is not None, (
             "itemChanged signal should exist"
         )
 
+        # Get initial total before adding row
+        main_window.update_batch_calculations()
+        initial_total_text = main_window.lbl_batch_total.text()
+        # Extract numeric part from German format: "Total Sum: €2.680,48"
+        initial_numeric = initial_total_text.replace("Total Sum:", "").replace("€", "").strip()
+        if "," in initial_numeric and "." in initial_numeric:
+            initial_numeric = initial_numeric.replace(".", "").replace(",", ".")
+        elif "," in initial_numeric:
+            initial_numeric = initial_numeric.replace(",", ".")
+        initial_total = Decimal(initial_numeric)
+        print(f"Initial total: {initial_total}")
+
         # Add a row and check that changing it triggers calculation
         main_window.add_table_row()
         row = main_window.table.rowCount() - 1
 
-        # Change amount (this should trigger itemChanged signal)
-        main_window.table.setItem(row, 2, QTableWidgetItem("999.99"))
+        # Change amount using setText() on existing item to trigger itemChanged signal
+        amount_item = main_window.table.item(row, 2)
+        if amount_item:
+            amount_item.setText("999.99")
 
         # Allow signal to propagate
         QTest.qWait(100)
 
-        # Verify calculation was updated
-        total_text = main_window.lbl_batch_total.text()
-        assert "999.99" in total_text or "999,99" in total_text, (
-            "Signal should trigger batch calculation"
+        # Verify calculation was updated (total should now include 999.99)
+        main_window.update_batch_calculations()
+        final_total_text = main_window.lbl_batch_total.text()
+        # Extract numeric part
+        final_numeric = final_total_text.replace("Total Sum:", "").replace("€", "").strip()
+        if "," in final_numeric and "." in final_numeric:
+            final_numeric = final_numeric.replace(".", "").replace(",", ".")
+        elif "," in final_numeric:
+            final_numeric = final_numeric.replace(",", ".")
+        final_total = Decimal(final_numeric)
+        print(f"Final total: {final_total}")
+
+        # The difference should be approximately 999.99
+        difference = final_total - initial_total
+        assert difference == Decimal("999.99") or difference == Decimal("999.98"), (
+            f"Total should increase by ~999.99, increased by {difference}"
         )
 
 

@@ -23,7 +23,6 @@ class TestIBANValidationValidCases:
         valid_ibans = [
             "DE89370400440532013000",  # Commerzbank
             "DE12500105170648489890",  # Deutsche Bank
-            "DE89370400440532013001",  # Another valid German IBAN
         ]
 
         for iban in valid_ibans:
@@ -222,31 +221,20 @@ class TestIBANValidationIntegration:
 
     def test_table_iban_color_coding(self, main_window):
         """Test that valid IBANs get white color, invalid get red color."""
+        from PyQt6.QtWidgets import QTableWidgetItem, QApplication
 
-        # Set up test table with valid and invalid IBANs
-        main_window.table.setRowCount(2)
+        # Clear existing table and set up fresh test data
+        main_window.table.setRowCount(0)
 
         # Row 0: Valid IBAN
-        main_window.table.setItem(
-            0, 0, main_window.table.item(0, 0) or main_window.table.item(0, 0)
-        )
-        main_window.table.setItem(
-            0, 1, main_window.table.item(0, 1) or main_window.table.item(0, 1)
-        )
-        main_window.table.setItem(
-            0, 2, main_window.table.item(0, 2) or main_window.table.item(0, 2)
-        )
-        main_window.table.setItem(
-            0, 3, main_window.table.item(0, 3) or main_window.table.item(0, 3)
-        )
+        main_window.table.insertRow(0)
+        main_window.table.setItem(0, 0, QTableWidgetItem("Test User"))
+        main_window.table.setItem(0, 1, QTableWidgetItem("DE89370400440532013000"))
+        main_window.table.setItem(0, 2, QTableWidgetItem("100.00"))
+        main_window.table.setItem(0, 3, QTableWidgetItem("Test Ref"))
 
-        # Set valid IBAN in row 0
-        valid_item = main_window.table.item(0, 1)
-        if not valid_item:
-            from PyQt6.QtWidgets import QTableWidgetItem
-
-            valid_item = QTableWidgetItem("DE89370400440532013000")
-            main_window.table.setItem(0, 1, valid_item)
+        # Process Qt events
+        QApplication.processEvents()
 
         # Trigger update
         main_window.update_batch_calculations()
@@ -262,10 +250,13 @@ class TestIBANValidationIntegration:
 
     def test_invalid_iban_color_coding(self, main_window):
         """Test that invalid IBANs get red color indication."""
-        from PyQt6.QtWidgets import QTableWidgetItem
+        from PyQt6.QtWidgets import QTableWidgetItem, QApplication
+
+        # Clear existing table and set up fresh test data
+        main_window.table.setRowCount(0)
 
         # Add row with invalid IBAN
-        row = main_window.table.rowCount()
+        row = 0
         main_window.table.insertRow(row)
         main_window.table.setItem(row, 0, QTableWidgetItem("Test User"))
         main_window.table.setItem(
@@ -273,6 +264,9 @@ class TestIBANValidationIntegration:
         )  # Invalid format
         main_window.table.setItem(row, 2, QTableWidgetItem("100.00"))
         main_window.table.setItem(row, 3, QTableWidgetItem("Test"))
+
+        # Process Qt events
+        QApplication.processEvents()
 
         # Trigger update
         main_window.update_batch_calculations()
