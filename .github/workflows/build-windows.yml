@@ -1,10 +1,9 @@
-name: Build Windows Executable (DISABLED)
+name: Build Windows Executable
 
 on:
-  workflow_dispatch:  # Only allow manual dispatch when explicitly enabled
   push:
     branches: [ main ]
-    tags: [ 'v*' ]
+  tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
