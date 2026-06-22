@@ -141,7 +141,9 @@ jobs:
             "version=$version" | Add-Content -Path $env:GITHUB_OUTPUT
             Write-Host "Tagged version: $version"
           } else {
-            $version = "dev-${{ github.sha }}".Substring(0, [Math]::Min(7, ${{ github.sha }}.Length))
+            $sha = '${{ github.sha }}'
+            $shortSha = $sha.Substring(0, [Math]::Min(7, $sha.Length))
+            $version = "dev-$shortSha"
             "version=$version" | Add-Content -Path $env:GITHUB_OUTPUT
             Write-Host "Development version: $version"
           }
