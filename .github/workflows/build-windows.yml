@@ -18,6 +18,10 @@ on:
         required: false
         type: string
 
+permissions:
+  contents: write
+  releases: write
+
 jobs:
   build-windows:
     name: Build Windows .exe
