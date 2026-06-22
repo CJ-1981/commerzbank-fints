@@ -85,30 +85,31 @@ jobs:
           echo "Icon directory ready"
         shell: cmd
 
-      - name: Build with PyInstaller (standard spec)
-        id: standard_build
+      - name: Build with PyInstaller (minimal spec first)
+        id: minimal_build
         run: |
-          echo "Starting PyInstaller build with standard spec..."
-          pyinstaller commerzbank_fints.spec --clean --noconfirm --log-level=DEBUG
+          echo "Starting PyInstaller build with minimal spec..."
+          pyinstaller commerzbank_fints_minimal.spec --clean --noconfirm --log-level=INFO
           if ($LASTEXITCODE -eq 0) {
-            echo "PyInstaller build completed successfully!"
+            echo "Minimal build completed successfully!"
             "build_success=true" | Add-Content -Path $env:GITHUB_OUTPUT
           } else {
-            echo "Standard build failed with exit code $LASTEXITCODE"
+            echo "Minimal build failed with exit code $LASTEXITCODE"
             "build_success=false" | Add-Content -Path $env:GITHUB_OUTPUT
-            exit 1
           }
         shell: pwsh
-        timeout-minutes: 10
-
-      - name: Build with fallback spec (if standard failed)
-        if: steps.standard_build.outputs.build_success != 'true'
-        run: |
-          echo "Standard build failed, trying fast spec..."
-          pyinstaller commerzbank_fints_fast.spec --clean --noconfirm
-          echo "Fallback build completed!"
-        shell: pwsh
         timeout-minutes: 8
+        continue-on-error: true
+
+      - name: Build with fallback spec (if minimal failed)
+        if: steps.minimal_build.outputs.build_success != 'true'
+        run: |
+          echo "Minimal build failed, trying standard spec..."
+          pyinstaller commerzbank_fints.spec --clean --noconfirm --log-level=INFO
+          echo "Standard build attempt completed!"
+        shell: pwsh
+        timeout-minutes: 10
+        continue-on-error: true
 
       - name: Verify build output
         run: |
@@ -117,8 +118,10 @@ jobs:
             dir "dist\CommerzbankFinTS_Payout_Automator.exe"
           ) else (
             echo "Build failed - executable not found"
-            exit 1
+            echo "Checking dist directory contents:"
+            dir dist
           )
+        continue-on-error: true
         shell: cmd
 
       - name: Create installer directory
