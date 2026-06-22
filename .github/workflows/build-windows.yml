@@ -81,8 +81,8 @@ jobs:
 
       - name: Create icon directory
         run: |
-          mkdir build-assets
-          echo "Icon directory created"
+          if not exist build-assets mkdir build-assets
+          echo "Icon directory ready"
         shell: cmd
 
       - name: Build with PyInstaller (standard spec)
