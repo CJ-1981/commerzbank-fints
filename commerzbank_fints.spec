@@ -6,6 +6,7 @@ Creates a standalone Windows executable with all dependencies bundled
 
 import sys
 import os
+import site
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 # Application metadata
@@ -27,8 +28,22 @@ binaries = []
 
 # Essential Qt platform plugins (Windows-specific)
 if is_windows:
-    datas += [('C:/Python311/Lib/site-packages/PyQt6/Qt6/plugins/platforms/', 'PyQt6/Qt6/plugins/platforms/')]
-    datas += [('C:/Python311/Lib/site-packages/PyQt6/Qt6/plugins/styles/', 'PyQt6/Qt6/plugins/styles/')]
+    # Dynamically find PyQt6 installation path
+    try:
+        import PyQt6
+        pyqt6_path = os.path.dirname(PyQt6.__file__)
+        plugins_path = os.path.join(pyqt6_path, 'Qt6', 'plugins')
+        if os.path.exists(plugins_path):
+            # Add platforms plugin
+            platforms_dir = os.path.join(plugins_path, 'platforms')
+            if os.path.exists(platforms_dir):
+                datas += [(platforms_dir + '/', 'PyQt6/Qt6/plugins/platforms/')]
+            # Add styles plugin
+            styles_dir = os.path.join(plugins_path, 'styles')
+            if os.path.exists(styles_dir):
+                datas += [(styles_dir + '/', 'PyQt6/Qt6/plugins/styles/')]
+    except ImportError:
+        pass
 
 # Collect fints library data only (skip problematic PyQt6 collection)
 try:
